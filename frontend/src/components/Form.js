@@ -5,11 +5,13 @@ import SelectCharacter from "./SelectCharacter";
 
 const Form = () => {
     return (
-        <div>
+        <div className={"form"}>
             <NameField />
             <SelectCharacter />
-            <Button name={"Join Game"} onClick={() => console.log("Join Game Hello")}/>
-            <Button name={"Create Game"} onClick={() => console.log("Create Game")}/>
+            <div className={"button-container"}>
+                <Button classname={"joinbutton"} name={"Join Game"} onClick={() => console.log("Join Game Hello")}/>
+                <Button classname={"createbutton"} name={"Create Game"} onClick={() => console.log("Create Game")}/>
+            </div>
         </div>
     )
 }

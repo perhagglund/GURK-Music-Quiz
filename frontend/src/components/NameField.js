@@ -2,8 +2,9 @@ import React from "react";
 
 const NameField = () => {
     return (
-        <div>
-            <input type={"text"} placeholder={"Write in your name"}/>
+        <div className={"namefield"}>
+            <h2 className={"nameheader"}>Nickname</h2>
+            <input type={"text"}/>
         </div>
     )
 }

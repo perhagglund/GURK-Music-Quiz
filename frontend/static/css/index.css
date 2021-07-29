@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgba(94, 189, 94, 0.6);
+    background-image: url("../images/nutNote4.png");
+}
+.form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    border-radius: 8px;
+    min-height: 65vh;
+    min-width: 27vw;
+    background-color: #fff3ec;
+    padding: 3vh 0;
+    box-shadow: 7px 6px 6px lightgray;
+}
+.namefield {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.namefield > input[type="text"] {
+    border: 2px solid black;
+    border-radius: 5px;
+    min-width: 28vh;
+    height: 4.3vh;
+    font-size: 1.8vh;
+    font-family: Poppins, sans-serif;
+    text-align: center;
+    box-shadow: 6px 2px lightgray;
+}
+.nameheader {
+    font-family: Poppins, sans-serif;
+    font-size: 2.5vh;
+}
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.joinbutton {
+    height: 6vh;
+    border-radius: 8px;
+    font-family: Poppins, sans-serif;
+    font-size: 2.3vh;
+    color: azure;
+    min-width: 20vw;
+    background-color: limegreen;
+    margin-bottom: 0.8vh;
+    border: none;
+    cursor: pointer;
+    box-shadow: 6px 4px 4px lightgray;
+}
+.joinbutton:hover {
+    background-color: green;
+    color: beige;
+}
+.joinbutton:active {
+    transform: translateY(1px);
+}
+.createbutton {
+    height: 4vh;
+    border-radius: 8px;
+    font-family: Poppins, sans-serif;
+    font-size: 1.5vh;
+    color: azure;
+    min-width: 10vw;
+    background-color: coral;
+    border: none;
+    cursor: pointer;
+    box-shadow: 6px 4px 4px lightgray;
+}
+.createbutton:hover {
+    background-color: #ba5d34;
+    color: beige;
+}
+.createbutton:active {
+    transform: translateY(1px);
+}
+.selectcharacter {
+    display: flex;
+    justify-content: center;
+    border: 1px solid red;
+}
