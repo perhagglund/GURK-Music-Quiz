@@ -34,7 +34,7 @@ const SelectCharacter = () => {
         }
     }
     return (
-        <div>
+        <div className={"selectcharacter"}>
             <Button name={"Change color"} onClick={changeColor}/>
             <CharSelection name={"color"} number={colorSelect}/>
             <Button name={"Change eyes"} onClick={changeEyes}/>
