@@ -17,6 +17,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    align-items: center;
     border-radius: 8px;
     min-height: 65vh;
     min-width: 27vw;
@@ -47,6 +48,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding-bottom: 1px;
 }
 .joinbutton {
     height: 6vh;
@@ -55,11 +57,11 @@
     font-size: 2.3vh;
     color: azure;
     min-width: 20vw;
-    background-color: limegreen;
+    background-color: #2fbb2f;
     margin-bottom: 0.8vh;
     border: none;
     cursor: pointer;
-    box-shadow: 6px 4px 4px lightgray;
+    box-shadow: 6px 4px 2px lightgray;
 }
 .joinbutton:hover {
     background-color: green;
@@ -89,6 +91,29 @@
 }
 .selectcharacter {
     display: flex;
-    justify-content: center;
-    border: 1px solid red;
+    justify-content: space-around;
+    width: 15vw;
+    min-width: 200px;
+    height: 20vh;
+    background-image: url("../images/characterbackground.jpg");
+    border-radius: 1px;
 }
+.arrowbutton-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin: 2vh 1vw;
+}
+.arrowbutton {
+    height: 3vh;
+    cursor: pointer;
+}
+.character-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.basecharacter {
+    height: 10vh;
+}
+

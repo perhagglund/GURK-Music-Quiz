@@ -3,7 +3,7 @@ import React from "react";
 const CharSelection = (props) => {
     return (
         <div>
-            {props.name} : {props.number}
+            {props.number}
         </div>
     )
 }

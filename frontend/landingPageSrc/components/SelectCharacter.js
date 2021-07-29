@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import CharSelection from "./charSelection";
 import Button from "./Button";
+import ArrowButton from "./ArrowButton";
 
 
 const SelectCharacter = () => {
@@ -35,12 +36,22 @@ const SelectCharacter = () => {
     }
     return (
         <div className={"selectcharacter"}>
-            <Button name={"Change color"} onClick={changeColor}/>
-            <CharSelection name={"color"} number={colorSelect}/>
-            <Button name={"Change eyes"} onClick={changeEyes}/>
-            <CharSelection name={"eyes"} number={eyesSelect}/>
-            <Button name={"Change mouth"} onClick={changeMouth}/>
-            <CharSelection name={"mouth"} number={mouthSelect}/>
+            <div className={"arrowbutton-container"}>
+                <ArrowButton src={"/static/images/arrow.png"} onClick={changeEyes}/>
+                <ArrowButton src={"/static/images/arrow.png"} onClick={changeMouth}/>
+                <ArrowButton src={"/static/images/arrow.png"} onClick={changeColor}/>
+            </div>
+            <div className={"character-container"}>
+                <img className={"basecharacter"} src="/static/images/baseCharacter.png" alt="baseCharacter img"/>
+                <CharSelection number={eyesSelect}/>
+                {/*<CharSelection name={"mouth"} number={mouthSelect}/>
+                <CharSelection name={"color"} number={colorSelect}/>*/}
+            </div>
+            <div className={"arrowbutton-container"}>
+                <ArrowButton src={"/static/images/arrow1.png"} onClick={changeEyes}/>
+                <ArrowButton src={"/static/images/arrow1.png"} onClick={changeMouth}/>
+                <ArrowButton src={"/static/images/arrow1.png"} onClick={changeColor}/>
+            </div>
         </div>
     )
 }
