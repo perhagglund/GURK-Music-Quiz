@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap');
 
 * {
     margin: 0;
@@ -13,14 +14,15 @@
     background-color: rgba(94, 189, 94, 0.6);
     background-image: url("../images/nutNote4.png");
 }
-.form {
+.form, .settings-container {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
     border-radius: 8px;
     min-height: 65vh;
-    min-width: 27vw;
+    width: 27vw;
+    min-width: 450px;
     background-color: #fff3ec;
     padding: 3vh 0;
     box-shadow: 7px 6px 6px lightgray;
@@ -33,12 +35,14 @@
 .namefield > input[type="text"] {
     border: 2px solid black;
     border-radius: 5px;
-    min-width: 28vh;
+    width: 18vw;
+    min-width: 320px;
     height: 4.3vh;
     font-size: 1.8vh;
-    font-family: Poppins, sans-serif;
+    font-family: "Open Sans", sans-serif;
     text-align: center;
     box-shadow: 6px 2px lightgray;
+    z-index: 2;
 }
 .nameheader {
     font-family: Poppins, sans-serif;
@@ -50,24 +54,25 @@
     align-items: center;
     padding-bottom: 1px;
 }
-.joinbutton {
+.joinbutton, .startbutton {
     height: 6vh;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
     font-size: 2.3vh;
     color: azure;
-    min-width: 20vw;
+    width: 20vw;
+    min-width: 280px;
     background-color: #2fbb2f;
     margin-bottom: 0.8vh;
     border: none;
     cursor: pointer;
     box-shadow: 6px 4px 2px lightgray;
 }
-.joinbutton:hover {
+.joinbutton:hover, .startbutton:hover {
     background-color: green;
     color: beige;
 }
-.joinbutton:active {
+.joinbutton:active, .createbutton:active, .startbutton:active  {
     transform: translateY(1px);
 }
 .createbutton {
@@ -76,7 +81,8 @@
     font-family: Poppins, sans-serif;
     font-size: 1.5vh;
     color: azure;
-    min-width: 10vw;
+    width: 10vw;
+    min-width: 140px;
     background-color: coral;
     border: none;
     cursor: pointer;
@@ -86,14 +92,11 @@
     background-color: #ba5d34;
     color: beige;
 }
-.createbutton:active {
-    transform: translateY(1px);
-}
 .selectcharacter {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     width: 15vw;
-    min-width: 200px;
+    min-width: 250px;
     height: 20vh;
     background-image: url("../images/characterbackground.jpg");
     border-radius: 1px;
@@ -102,11 +105,21 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    margin: 2vh 1vw;
+    margin: 2vh 2vw;
 }
 .arrowbutton {
     height: 3vh;
     cursor: pointer;
+}
+.arrowbutton:active {
+    transform: translateY(1px);
+}
+.top-character-position {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: -11vh;
+    margin-top: -11vh;
 }
 .character-container {
     display: flex;
@@ -114,6 +127,13 @@
     align-items: center;
 }
 .basecharacter {
-    height: 10vh;
+    border-radius: 50%;
+    box-shadow: 2px 1px 1px lightgray;
+}
+.char {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 11vh;
 }
 

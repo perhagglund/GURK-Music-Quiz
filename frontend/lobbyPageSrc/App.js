@@ -1,11 +1,14 @@
 import React from "react";
+import Setting from "./components/Setting";
+import Players from "./components/Players";
 
 
 const App = () => {
 
     return (
         <div className={"body"}>
-            This is the Lobby, hells yeah
+            <Setting />
+            <Players />
         </div>
     )
 }
