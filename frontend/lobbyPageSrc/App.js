@@ -7,8 +7,10 @@ const App = () => {
     const roomName = window.location.pathname
     return (
         <div className={"body"}>
-            <Setting />
-            <Players />
+            <div className={"main-container"}>
+                <Setting />
+                <Players />
+            </div>
         </div>
     )
 }
