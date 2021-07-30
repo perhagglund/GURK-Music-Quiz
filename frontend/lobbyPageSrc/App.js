@@ -9,8 +9,6 @@ const App = () => {
         <div className={"body"}>
             <Setting />
             <Players />
-            {roomName}
-            This is the Lobby, hells yeah
         </div>
     )
 }

@@ -33,6 +33,7 @@ const SelectCharacter = () => {
         }
     }
     return (
+
         <div className={"selectcharacter"}>
             <div className={"arrowbutton-container"}>
                 <ArrowButton src={"/static/images/arrow.png"} onClick={changeEyes}/>

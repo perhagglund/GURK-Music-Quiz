@@ -6,7 +6,7 @@ const Rounds = () => {
     return (
         <div className={"rounds"}>
             <label className={"roundsheader"} htmlFor="rounds">Rounds: </label>
-            <select name="rounds" id="rounds">
+            <select className={"roundsselector"} name="rounds" id="rounds">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
