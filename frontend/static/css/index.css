@@ -14,18 +14,30 @@
     background-color: rgba(94, 189, 94, 0.6);
     background-image: url("../images/nutNote4.png");
 }
-.form, .settings-container {
+.main-container {
+    display: flex;
+    justify-content: center;
+}
+.form, .settings-container, .players-container {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
     border-radius: 8px;
-    min-height: 65vh;
+    height: 65vh;
     width: 27vw;
     min-width: 450px;
     background-color: #fff3ec;
     padding: 3vh 0;
     box-shadow: 7px 6px 6px lightgray;
+}
+.settings-container {
+    margin-left: 8vw;
+}
+.players-container {
+    width: 11vw;
+    height: 35vh;
+    margin-left: 0.4vw;
 }
 .namefield {
     display: flex;
@@ -135,5 +147,18 @@
     top: 0;
     left: 0;
     height: 11vh;
+}
+.rounds {
+    border: 3px solid black;
+    border-radius: 3px;
+    padding: 1vh 1.5vw;
+}
+.roundsheader, .roundsselector {
+    font-family: Poppins, sans-serif;
+    font-size: 3.5vh;
+}
+.roundsselector {
+    border: none;
+    background-color: #fff3ec;
 }
 
