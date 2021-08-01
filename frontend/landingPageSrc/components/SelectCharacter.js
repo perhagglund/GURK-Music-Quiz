@@ -15,16 +15,15 @@ const SelectCharacter = () => {
         } else {
             setColorSelect(0)
         }
-        console.log(colorSelect)
     }
-    const changeEyes = () => {
+    const changeEyesPlus = () => {
         if (eyesSelect < maxSelection) {
             setEyesSelect(eyesSelect + 1)
         } else {
             setEyesSelect(0)
         }
     }
-    const changeMouth = () => {
+    const changeMouthPlus = () => {
 
         if (mouthSelect < maxSelection) {
             setMouthSelect(mouthSelect + 1)
@@ -32,13 +31,36 @@ const SelectCharacter = () => {
             setMouthSelect(0)
         }
     }
+    const changeColorMinus = () => {
+        if (colorSelect > 0) {
+            setColorSelect(colorSelect - 1)
+        } else {
+            setColorSelect(maxSelection)
+        }
+    }
+    const changeEyesMinus = () => {
+        if (eyesSelect > 0) {
+            setEyesSelect(eyesSelect - 1)
+        } else {
+            setEyesSelect(maxSelection)
+        }
+    }
+    const changeMouthMinus = () => {
+
+        if (mouthSelect > 0) {
+            setMouthSelect(mouthSelect - 1)
+        } else {
+            setMouthSelect(maxSelection)
+        }
+    }
     return (
 
         <div className={"selectcharacter"}>
             <div className={"arrowbutton-container"}>
-                <ArrowButton src={"/static/images/arrow.png"} onClick={changeEyes}/>
-                <ArrowButton src={"/static/images/arrow.png"} onClick={changeMouth}/>
-                <ArrowButton src={"/static/images/arrow.png"} onClick={changeColor}/>
+                <ArrowButton src={"/static/images/arrow.png"} onClick={changeEyesMinus}/>
+                <ArrowButton src={"/static/images/arrow.png"} onClick={changeMouthMinus}/>
+                <ArrowButton src={"/static/images/arrow.png"} onClick={changeColorMinus}/>
+
             </div>
             <div className={"top-character-position"}>
                 <div className={"character-container"} >
@@ -48,9 +70,9 @@ const SelectCharacter = () => {
                 </div>
             </div>
             <div className={"arrowbutton-container"}>
-                <ArrowButton src={"/static/images/arrow1.png"} onClick={changeEyes}/>
-                <ArrowButton src={"/static/images/arrow1.png"} onClick={changeMouth}/>
-                <ArrowButton src={"/static/images/arrow1.png"} onClick={changeColor}/>
+                <ArrowButton src={"/static/images/arrow1.png"} onClick={changeEyesPlus}/>
+                <ArrowButton src={"/static/images/arrow1.png"} onClick={changeMouthPlus}/>
+                <ArrowButton src={"/static/images/arrow1.png"} onClick={changeColorPlus}/>
             </div>
         </div>
     )
