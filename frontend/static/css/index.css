@@ -17,6 +17,7 @@
 .main-container {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
 }
 .form, .settings-container, .players-container {
     display: flex;
@@ -134,9 +135,7 @@
     margin-top: -11vh;
 }
 .character-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative;
 }
 .basecharacter {
     border-radius: 50%;
