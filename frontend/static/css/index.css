@@ -122,9 +122,7 @@
     margin-top: -11vh;
 }
 .character-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative;
 }
 .basecharacter {
     border-radius: 50%;
@@ -136,4 +134,16 @@
     left: 0;
     height: 11vh;
 }
-
+.rounds {
+    border: 3px solid black;
+    border-radius: 3px;
+    padding: 1vh 1.5vw;
+}
+.roundsheader, .roundsselector {
+    font-family: Poppins, sans-serif;
+    font-size: 3.5vh;
+}
+.roundsselector {
+    border: none;
+    background-color: #fff3ec;
+}
