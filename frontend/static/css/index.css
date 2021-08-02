@@ -8,29 +8,44 @@
 }
 .body {
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    align-items: center;
     height: 100vh;
     background-color: rgba(94, 189, 94, 0.6);
     background-image: url("../images/nutNote4.png");
+}
+.body-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
 }
 .main-container {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
 }
-.form, .settings-container, .players-container {
+.form, .settings-container, .players-container, .notcookiebanner {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
     border-radius: 8px;
-    height: 65vh;
-    width: 27vw;
-    min-width: 450px;
-    background-color: #fff3ec;
+    min-height: 660px;
+    max-height: 800px;
+    height: 92vh;
+    width: 28vw;
+    min-width: 570px;
+    max-width: 600px;
+    background-color: #fff8f5;
     padding: 3vh 0;
     box-shadow: 7px 6px 6px lightgray;
+}
+.notcookie-container {
+    position: absolute;
+    bottom: 18px;
+    left: 20vw;
 }
 .settings-container {
     margin-left: 8vw;
@@ -54,7 +69,7 @@
     font-size: 1.8vh;
     font-family: "Open Sans", sans-serif;
     text-align: center;
-    box-shadow: 6px 2px lightgray;
+    box-shadow: 5px 2px 2px lightgray;
     z-index: 2;
 }
 .nameheader {
@@ -68,13 +83,12 @@
     padding-bottom: 1px;
 }
 .joinbutton, .startbutton {
-    height: 6vh;
+    height: 48px;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
-    font-size: 2.3vh;
+    font-size: 2.7vh;
     color: azure;
-    width: 20vw;
-    min-width: 280px;
+    width: 395px;
     background-color: #2fbb2f;
     margin-bottom: 0.8vh;
     border: none;
@@ -89,13 +103,12 @@
     transform: translateY(1px);
 }
 .createbutton {
-    height: 4vh;
+    height: 35px;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
-    font-size: 1.5vh;
+    font-size: 1.8vh;
     color: azure;
-    width: 10vw;
-    min-width: 140px;
+    width: 200px;
     background-color: coral;
     border: none;
     cursor: pointer;
@@ -105,12 +118,27 @@
     background-color: #ba5d34;
     color: beige;
 }
+.cookiebutton {
+    height: 42px;
+    border-radius: 8px;
+    font-family: Poppins, sans-serif;
+    font-size: 1.9vh;
+    color: azure;
+    width: 150px;
+    background-color: rgba(248, 92, 33, 0.85);
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 1px 1px lightgray;
+}
 .selectcharacter {
     display: flex;
     justify-content: space-between;
-    width: 15vw;
-    min-width: 250px;
-    height: 20vh;
+    width: 20vw;
+    min-width: 300px;
+    max-width: 400px;
+    height: 23vh;
+    min-height: 180px;
+    max-height: 300px;
     background-image: url("../images/characterbackground.jpg");
     border-radius: 1px;
 }
@@ -118,7 +146,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    margin: 2vh 2vw;
+    margin: 2vh 30px;
 }
 .arrowbutton {
     height: 3vh;
@@ -159,5 +187,24 @@
 .roundsselector {
     border: none;
     background-color: #fff3ec;
+}
+.logo{
+    width: 380px;
+    margin-bottom: 25px;
+}
+.notcookiebanner {
+    min-height: 50px;
+    max-height: 100px;
+    height: 7vh;
+    width: 60vw;
+    max-width: 70vw;
+    background-color: #fff;
+    display: flex;
+    flex-direction: row;
+    box-shadow: none;
+}
+.notcookiebanner > h3 {
+    font-family: "Courier New", sans-serif;
+    font-size: 13px;
 }
 

@@ -124,7 +124,6 @@ const Form = () => {
                 <Button classname={"joinbutton"} name={"Join Game"} onClick={() => console.log("Join game")}/>
                 <Button classname={"createbutton"} name={"Create Game"} onClick={onCreateClick}/>
             </div>
-            <div> THIS SITRE USERTES COOKIES</div>
         </div>
     )
 }

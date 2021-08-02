@@ -22,9 +22,11 @@ const App = () => {
 
     return (
         <div className={"body"}>
-            <div className={"main-container"}>
-                <Setting/>
-                <Players playerList={playerList}/>
+            <div className={"body-container"}>
+                <div className={"main-container"}>
+                    <Setting/>
+                    <Players playerList={playerList}/>
+                </div>
             </div>
         </div>
     )
