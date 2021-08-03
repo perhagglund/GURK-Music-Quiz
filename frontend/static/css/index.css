@@ -37,7 +37,7 @@
     max-height: 800px;
     height: 92vh;
     width: 28vw;
-    min-width: 570px;
+    min-width: 590px;
     max-width: 650px;
     background-color: rgb(250, 243, 243);
     padding: 3vh 0;
@@ -56,6 +56,7 @@
     width: 11vw;
     height: 35vh;
     margin-left: 0.4vw;
+    display: block;
 }
 .namefield {
     display: flex;
@@ -85,15 +86,15 @@
     padding-bottom: 1px;
 }
 .joinbutton, .startbutton {
-    height: 6vh;
-    min-height: 55px;
-    max-height: 75px;
+    height: 7vh;
+    min-height: 60px;
+    max-height: 73px;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
-    font-size: 2.7vh;
+    font-size: 2.5vh;
     color: azure;
     width: 20vw;
-    min-width: 395px;
+    min-width: 400px;
     max-width: 550px;
     background-color: #2fbb2f;
     margin-bottom: 0.8vh;
@@ -189,18 +190,12 @@
     left: 0;
     height: 11vh;
 }
-.rounds {
+.roundsheader {
+    font-family: Poppins, sans-serif;
+    font-size: 4vh;
     border: 3px solid black;
     border-radius: 3px;
     padding: 1vh 1.5vw;
-}
-.roundsheader, .roundsselector {
-    font-family: Poppins, sans-serif;
-    font-size: 3.5vh;
-}
-.roundsselector {
-    border: none;
-    background-color: #fff3ec;
 }
 .logo{
     width: 380px;
@@ -222,4 +217,57 @@
     font-family: "Courier New", sans-serif;
     font-size: 15px;
 }
-
+.playerheader {
+    font-family: Poppins, sans-serif;
+    font-size: 2.5vh;
+    text-align: center;
+    padding: 1vh 0;
+}
+.playercharacters {
+    border: 2px solid red;
+    display: flex;
+    flex-flow: wrap;
+    justify-content: flex-start;
+    margin: 11vh;
+}
+.main-settings, .speed, .rounds {
+    display: block;
+    font-size: 2vh;
+    font-family: "Open Sans", sans-serif;
+}
+.main-settings {
+    width: 70%;
+}
+.speed, .rounds {
+    border: 2px solid black;
+    padding: 4px;
+    border-radius: 3px;
+    background-color: rgb(250, 243, 243);
+    float: right;
+    margin-top: 0.3vh;
+}
+.reverse {
+    visibility: hidden;
+}
+.reverse-div > img {
+    width: 3vh;
+    margin-bottom: -0.6vh;
+}
+.checkbox {
+    height: 3.2vh;
+    border: 3px solid black;
+    border-radius: 4px;
+    width: 3.2vh;
+    float: right;
+    margin-top: -1vh;
+}
+.checkbox-true {
+    background-image: url("../images/check.png");
+    background-size: cover;
+}
+.checkbox-false {
+    background-image: url("../images/check1.png");
+}
+.speed-container, .reverse-container, .rounds-container {
+    margin: 20% 0;
+}

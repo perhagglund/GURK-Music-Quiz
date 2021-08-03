@@ -1,16 +1,25 @@
-import React from "react";
+import React, { useState } from 'react'
 
+const Rounds = (props) => {
 
-const Rounds = () => {
+    const handleSelectChange = (e) => {
+        props.setSelectRounds(e.target.value)
+    }
 
     return (
-        <div className={"rounds"}>
-            <label className={"roundsheader"} htmlFor="rounds">Rounds: </label>
-            <select className={"roundsselector"} name="rounds" id="rounds">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
+        <div className={"rounds-container"}>
+            <label htmlFor="rounds">Number of rounds: </label>
+            <select onChange={handleSelectChange} className={"rounds"} id={"rounds"} value={props.selectRounds}>
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+                <option value={5} selected>5</option>
+                <option value={6}>6</option>
+                <option value={7}>7</option>
+                <option value={8}>8</option>
+                <option value={9}>9</option>
+                <option value={10}>10</option>
             </select>
         </div>
     )

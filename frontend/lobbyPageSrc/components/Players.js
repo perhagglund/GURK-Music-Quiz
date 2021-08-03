@@ -35,7 +35,10 @@ const Players = (props) => {
     return (
         <div className={"players-container"}>
             <h2 className={"playerheader"}>Players</h2>
-            {playerList}
+            <div className={"playercharacters"}>
+                {playerList}
+            </div>
+
         </div>
     )
 }
