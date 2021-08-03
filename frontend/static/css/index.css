@@ -10,8 +10,9 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     height: 100vh;
-    background-color: rgba(94, 189, 94, 0.6);
+    background-color: rgba(253, 93, 46, 0.9);
     background-image: url("../images/nutNote4.png");
 }
 .body-container {
@@ -32,20 +33,21 @@
     justify-content: space-around;
     align-items: center;
     border-radius: 8px;
-    min-height: 660px;
+    min-height: 650px;
     max-height: 800px;
     height: 92vh;
     width: 28vw;
     min-width: 570px;
-    max-width: 600px;
-    background-color: #fff8f5;
+    max-width: 650px;
+    background-color: rgb(250, 243, 243);
     padding: 3vh 0;
-    box-shadow: 7px 6px 6px lightgray;
+    box-shadow: 6px 4px 4px lightgray;
 }
 .notcookie-container {
     position: absolute;
     bottom: 18px;
-    left: 20vw;
+    display: flex;
+    justify-content: center;
 }
 .settings-container {
     margin-left: 8vw;
@@ -64,7 +66,7 @@
     border: 2px solid black;
     border-radius: 5px;
     width: 18vw;
-    min-width: 320px;
+    min-width: 325px;
     height: 4.3vh;
     font-size: 1.8vh;
     font-family: "Open Sans", sans-serif;
@@ -83,12 +85,16 @@
     padding-bottom: 1px;
 }
 .joinbutton, .startbutton {
-    height: 48px;
+    height: 6vh;
+    min-height: 55px;
+    max-height: 75px;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
     font-size: 2.7vh;
     color: azure;
-    width: 395px;
+    width: 20vw;
+    min-width: 395px;
+    max-width: 550px;
     background-color: #2fbb2f;
     margin-bottom: 0.8vh;
     border: none;
@@ -99,16 +105,20 @@
     background-color: green;
     color: beige;
 }
-.joinbutton:active, .createbutton:active, .startbutton:active  {
+.joinbutton:active, .createbutton:active, .startbutton:active, .cookiebutton:active  {
     transform: translateY(1px);
 }
 .createbutton {
-    height: 35px;
+    height: 4vh;
+    min-height: 35px;
+    max-height: 52px;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
     font-size: 1.8vh;
     color: azure;
-    width: 200px;
+    width: 11vw;
+    min-width: 200px;
+    max-width: 300px;
     background-color: coral;
     border: none;
     cursor: pointer;
@@ -119,15 +129,17 @@
     color: beige;
 }
 .cookiebutton {
-    height: 42px;
+    height: 4.5vh;
+    min-height: 42px;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
-    font-size: 1.9vh;
+    font-size: 1.6vh;
     color: azure;
-    width: 150px;
-    background-color: rgba(248, 92, 33, 0.85);
-    border: none;
+    width: 6.5vw;
+    min-width: 150px;
+    background-color: rgba(24, 24, 24, 0.85);
     cursor: pointer;
+    border: none;
     box-shadow: 2px 1px 1px lightgray;
 }
 .selectcharacter {
@@ -138,8 +150,10 @@
     max-width: 400px;
     height: 23vh;
     min-height: 180px;
-    max-height: 300px;
+    max-height: 275px;
     background-image: url("../images/characterbackground.jpg");
+    background-size: cover;
+    background-position: left;
     border-radius: 1px;
 }
 .arrowbutton-container {
@@ -193,18 +207,19 @@
     margin-bottom: 25px;
 }
 .notcookiebanner {
-    min-height: 50px;
-    max-height: 100px;
+    min-height: 75px;
+    max-height: 90px;
     height: 7vh;
-    width: 60vw;
-    max-width: 70vw;
-    background-color: #fff;
+    width: 50vw;
+    max-width: 1200px;
+    background-color: rgba(248, 248, 248, 0.96);
     display: flex;
     flex-direction: row;
+    align-items: center;
     box-shadow: none;
 }
 .notcookiebanner > h3 {
     font-family: "Courier New", sans-serif;
-    font-size: 13px;
+    font-size: 15px;
 }
 
