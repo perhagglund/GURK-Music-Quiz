@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import NameField from "./NameField"
 import Button from "./Button";
 import SelectCharacter from "./SelectCharacter";
+import fetch from "../../lobbyPageSrc/services/fetch";
 
 const Form = () => {
     const [nickname, setNickname] = useState("")
@@ -29,25 +30,38 @@ const Form = () => {
     const [errorMessage, setErrorMessage] = useState("")
 
     const makeID = (length) => {
-        let result           = '';
-        const characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const charactersLength = characters.length;
-        for ( let i = 0; i < length; i++ ) {
+        for (let i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() *
                 charactersLength));
         }
-        return result;
+        let exists;
+        fetch.doesRoomExist(result).then(r => {
+            exists = r.data
+        })
+        return {
+            "result": result,
+            "exists": exists
+        }
     }
 
+    const makeUniqueID = (length) => {
+        let id = makeID(length)
+        if(id.exists){
+            while(id.exists) {
+                id = makeID(length)
+            }
+        }
+        return id.result
+    }
     const onNickChange = (event) => {
         setNickname(event.target.value)
         setErrorMessage("")
-        console.log(nickname)
     }
 
     const onCreateClick = () => {
-        console.log(nickname)
-
         if (nickname.length === 0){
             setErrorMessage("Please write in a username")
         } else {
@@ -55,11 +69,8 @@ const Form = () => {
             localStorage.setItem("Eyes", eyesSelect.toString())
             localStorage.setItem("Mouth", mouthSelect.toString())
             localStorage.setItem("Color", colorSelect.toString())
-            localStorage.setItem("TEMP-Name", nickname.toString())
-            localStorage.setItem("TEMP-Eyes", eyesSelect.toString())
-            localStorage.setItem("TEMP-Mouth", mouthSelect.toString())
-            localStorage.setItem("TEMP-Color", colorSelect.toString())
-            window.location.href = "/" + makeID(8)
+            sessionStorage.setItem("Leader", "true")
+            window.location.href = "/" + makeUniqueID(8)
         }
     }
 
