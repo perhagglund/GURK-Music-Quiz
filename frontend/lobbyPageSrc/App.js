@@ -1,15 +1,15 @@
 import React, {useEffect, useRef, useState} from "react";
 import Setting from "./components/Setting";
 import Players from "./components/Players";
-import Character from "../landingPageSrc/components/character";
+import getEveryRoomName from "./services/fetch";
 
 
 const App = () => {
-    const roomName = window.location.pathname
-    const nickname = localStorage.getItem("TEMP-Name");
-    const color = localStorage.getItem("TEMP-Color");
-    const eyes = localStorage.getItem("TEMP-Eyes");
-    const mouth = localStorage.getItem("TEMP-Mouth");
+    const roomName = window.location.pathname.replace("/", "").replace("/", "")
+    const nickname = localStorage.getItem("Name")
+    const eyes = localStorage.getItem("Eyes")
+    const mouth = localStorage.getItem("Mouth")
+    const color = localStorage.getItem("Color")
     const [playerList, setPlayerList] = useState([{
         "name": "adam",
         "color": 3,
@@ -26,21 +26,30 @@ const App = () => {
         "eyes": 0,
         "mouth": 1
     }])
-    const url = "ws://" + window.location.host + "/ws/game" + roomName
+    const url = "ws://" + window.location.host + "/ws/game/" + roomName + "/"
     const client = new WebSocket(url)
     /*useEffect(() => {
         client.onopen = () => {
-            console.log("Hello")
-            client.send(JSON.stringify({
-                "Content-Type": "Joined",
-                "name": nickname,
-                "color": Number(color),
-                "eyes": Number(eyes),
-                "mouth": Number(mouth)
-            }))
+            if (sessionStorage.getItem("Leader")){
+                console.log("Leader Joined")
+                client.send(JSON.stringify({
+                    "ContentType": "LeaderJoined",
+                    "nickname": nickname,
+                    "eyes": eyes,
+                    "mouth": mouth,
+                    "color": color
+                }))
+            } else {
+                client.send(JSON.stringify({
+                    "ContentType": "PlayerJoined",
+                    "nickname": nickname,
+                    "eyes": eyes,
+                    "mouth": mouth,
+                    "color": color
+                }))
+            }
         }
     }, [])
-
     client.onmessage = (e) => {
         const data = JSON.parse(e.data)
         if (data.ContentType === "PlayerJoined") {
@@ -59,8 +68,6 @@ const App = () => {
         localStorage.removeItem("TEMP-Eyes")
         localStorage.removeItem("TEMP-Mouth")
     }*/
-
-
     return (
         <div className={"body"}>
             <div className={"body-container"}>

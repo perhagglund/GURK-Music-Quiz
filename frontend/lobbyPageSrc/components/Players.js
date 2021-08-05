@@ -13,10 +13,10 @@ const Players = (props) => {
             setPlayerList(
                 <div>
                     <Character
-                        color={Number(localStorage.getItem("TEMP-Color"))}
-                        eyes={Number(localStorage.getItem("TEMP-Eyes"))}
-                        mouth={Number(localStorage.getItem("TEMP-Mouth"))}/>
-                    <div>{localStorage.getItem("TEMP-Name")}</div>
+                        color={Number(localStorage.getItem("Color"))}
+                        eyes={Number(localStorage.getItem("Eyes"))}
+                        mouth={Number(localStorage.getItem("TMouth"))}/>
+                    <div>{localStorage.getItem("Name")}</div>
                 </div>
             )
         } else {

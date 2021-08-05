@@ -1,10 +1,8 @@
-import React from "react";
+import React, {useState} from "react";
+
 
 
 const Reverse = (props) => {
-
-
-
     return (
         <div className={"reverse-container"}>
             <label>
@@ -15,6 +13,4 @@ const Reverse = (props) => {
         </div>
     )
 }
-
-
 export default Reverse
