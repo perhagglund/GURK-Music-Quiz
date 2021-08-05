@@ -27,7 +27,7 @@
     justify-content: center;
     flex-wrap: wrap;
 }
-.form, .settings-container, .players-container, .notcookiebanner {
+.form, .settings-container, .players-container {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
@@ -66,18 +66,14 @@
 .namefield > input[type="text"] {
     border: 2px solid black;
     border-radius: 5px;
-    width: 18vw;
+    padding: 0.4em 1.4em;
+    width: 21em;
     min-width: 325px;
-    height: 4.3vh;
-    font-size: 1.8vh;
+    font-size: 1.2rem;
     font-family: "Open Sans", sans-serif;
     text-align: center;
     box-shadow: 5px 2px 2px lightgray;
     z-index: 2;
-}
-.nameheader {
-    font-family: Poppins, sans-serif;
-    font-size: 2.5vh;
 }
 .button-container {
     display: flex;
@@ -86,16 +82,11 @@
     padding-bottom: 1px;
 }
 .joinbutton, .startbutton {
-    height: 7vh;
-    min-height: 60px;
-    max-height: 73px;
+    padding: 0.5em 5em;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
-    font-size: 2.5vh;
+    font-size: 1.8rem;
     color: azure;
-    width: 20vw;
-    min-width: 400px;
-    max-width: 550px;
     background-color: #2fbb2f;
     margin-bottom: 0.8vh;
     border: none;
@@ -110,16 +101,11 @@
     transform: translateY(1px);
 }
 .createbutton {
-    height: 4vh;
-    min-height: 35px;
-    max-height: 52px;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
-    font-size: 1.8vh;
+    font-size: 1rem;
     color: azure;
-    width: 11vw;
-    min-width: 200px;
-    max-width: 300px;
+    padding: 0.6em 5em;
     background-color: coral;
     border: none;
     cursor: pointer;
@@ -130,14 +116,12 @@
     color: beige;
 }
 .cookiebutton {
-    height: 4.5vh;
-    min-height: 42px;
-    border-radius: 8px;
+    padding: 0.7em 4em;
+    margin-left: 1.2em;
+    border-radius: 5px;
     font-family: Poppins, sans-serif;
-    font-size: 1.6vh;
+    font-size: 1rem;
     color: azure;
-    width: 6.5vw;
-    min-width: 150px;
     background-color: rgba(24, 24, 24, 0.85);
     cursor: pointer;
     border: none;
@@ -175,6 +159,8 @@
     justify-content: center;
     align-items: center;
     margin-left: -11vh;
+}
+.selectcharacter > .top-character-position {
     margin-top: -11vh;
 }
 .character-container {
@@ -202,16 +188,12 @@
     margin-bottom: 25px;
 }
 .notcookiebanner {
-    min-height: 75px;
-    max-height: 90px;
-    height: 7vh;
-    width: 50vw;
-    max-width: 1200px;
+    padding: 0.7em 2em 0.7em 2.6em;
     background-color: rgba(248, 248, 248, 0.96);
     display: flex;
-    flex-direction: row;
     align-items: center;
     box-shadow: none;
+    border-radius: 4px;
 }
 .notcookiebanner > h3 {
     font-family: "Courier New", sans-serif;
@@ -225,10 +207,10 @@
 }
 .playercharacters {
     border: 2px solid red;
-    display: flex;
-    flex-flow: wrap;
-    justify-content: flex-start;
-    margin: 11vh;
+    display: grid;
+    grid-template-rows: 10em 2.5em;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin: 2em 10% 2em 10%;
 }
 .main-settings, .speed, .rounds {
     display: block;
@@ -244,14 +226,9 @@
     border-radius: 3px;
     background-color: rgb(250, 243, 243);
     float: right;
-    margin-top: 0.3vh;
 }
 .reverse {
     visibility: hidden;
-}
-.reverse-div > img {
-    width: 3vh;
-    margin-bottom: -0.6vh;
 }
 .checkbox {
     height: 3.2vh;

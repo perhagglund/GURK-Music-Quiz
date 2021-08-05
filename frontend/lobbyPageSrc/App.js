@@ -10,10 +10,25 @@ const App = () => {
     const color = localStorage.getItem("TEMP-Color");
     const eyes = localStorage.getItem("TEMP-Eyes");
     const mouth = localStorage.getItem("TEMP-Mouth");
-    const [playerList, setPlayerList] = useState([{}])
+    const [playerList, setPlayerList] = useState([{
+        "name": "adam",
+        "color": 3,
+        "eyes": 1,
+        "mouth": 3
+    }, {
+        "name": "per",
+        "color": 1,
+        "eyes": 2,
+        "mouth": 3
+    }, {
+        "name": "doniel",
+        "color": 2,
+        "eyes": 0,
+        "mouth": 1
+    }])
     const url = "ws://" + window.location.host + "/ws/game" + roomName
     const client = new WebSocket(url)
-    useEffect(() => {
+    /*useEffect(() => {
         client.onopen = () => {
             console.log("Hello")
             client.send(JSON.stringify({
@@ -43,7 +58,7 @@ const App = () => {
         localStorage.removeItem("TEMP-Color")
         localStorage.removeItem("TEMP-Eyes")
         localStorage.removeItem("TEMP-Mouth")
-    }
+    }*/
 
 
     return (
