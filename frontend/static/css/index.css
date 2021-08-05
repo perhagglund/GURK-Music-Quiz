@@ -8,11 +8,19 @@
 }
 .body {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: rgba(94, 189, 94, 0.6);
+    background-color: rgba(253, 93, 46, 0.9);
     background-image: url("../images/nutNote4.png");
+}
+.body-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
 }
 .main-container {
     display: flex;
@@ -25,12 +33,21 @@
     justify-content: space-around;
     align-items: center;
     border-radius: 8px;
-    height: 65vh;
-    width: 27vw;
-    min-width: 450px;
-    background-color: #fff3ec;
+    min-height: 650px;
+    max-height: 800px;
+    height: 92vh;
+    width: 28vw;
+    min-width: 590px;
+    max-width: 650px;
+    background-color: rgb(250, 243, 243);
     padding: 3vh 0;
-    box-shadow: 7px 6px 6px lightgray;
+    box-shadow: 6px 4px 4px lightgray;
+}
+.notcookie-container {
+    position: absolute;
+    bottom: 18px;
+    display: flex;
+    justify-content: center;
 }
 .settings-container {
     margin-left: 8vw;
@@ -39,6 +56,7 @@
     width: 11vw;
     height: 35vh;
     margin-left: 0.4vw;
+    display: block;
 }
 .namefield {
     display: flex;
@@ -48,18 +66,14 @@
 .namefield > input[type="text"] {
     border: 2px solid black;
     border-radius: 5px;
-    width: 18vw;
-    min-width: 320px;
-    height: 4.3vh;
-    font-size: 1.8vh;
+    padding: 0.4em 1.4em;
+    width: 21em;
+    min-width: 325px;
+    font-size: 1.2rem;
     font-family: "Open Sans", sans-serif;
     text-align: center;
-    box-shadow: 6px 2px lightgray;
+    box-shadow: 5px 2px 2px lightgray;
     z-index: 2;
-}
-.nameheader {
-    font-family: Poppins, sans-serif;
-    font-size: 2.5vh;
 }
 .button-container {
     display: flex;
@@ -68,13 +82,11 @@
     padding-bottom: 1px;
 }
 .joinbutton, .startbutton {
-    height: 6vh;
+    padding: 0.5em 5em;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
-    font-size: 2.3vh;
+    font-size: 1.8rem;
     color: azure;
-    width: 20vw;
-    min-width: 280px;
     background-color: #2fbb2f;
     margin-bottom: 0.8vh;
     border: none;
@@ -85,17 +97,15 @@
     background-color: green;
     color: beige;
 }
-.joinbutton:active, .createbutton:active, .startbutton:active  {
+.joinbutton:active, .createbutton:active, .startbutton:active, .cookiebutton:active  {
     transform: translateY(1px);
 }
 .createbutton {
-    height: 4vh;
     border-radius: 8px;
     font-family: Poppins, sans-serif;
-    font-size: 1.5vh;
+    font-size: 1rem;
     color: azure;
-    width: 10vw;
-    min-width: 140px;
+    padding: 0.6em 5em;
     background-color: coral;
     border: none;
     cursor: pointer;
@@ -105,20 +115,37 @@
     background-color: #ba5d34;
     color: beige;
 }
+.cookiebutton {
+    padding: 0.7em 4em;
+    margin-left: 1.2em;
+    border-radius: 5px;
+    font-family: Poppins, sans-serif;
+    font-size: 1rem;
+    color: azure;
+    background-color: rgba(24, 24, 24, 0.85);
+    cursor: pointer;
+    border: none;
+    box-shadow: 2px 1px 1px lightgray;
+}
 .selectcharacter {
     display: flex;
     justify-content: space-between;
-    width: 15vw;
-    min-width: 250px;
-    height: 20vh;
+    width: 20vw;
+    min-width: 300px;
+    max-width: 400px;
+    height: 23vh;
+    min-height: 180px;
+    max-height: 275px;
     background-image: url("../images/characterbackground.jpg");
+    background-size: cover;
+    background-position: left;
     border-radius: 1px;
 }
 .arrowbutton-container {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    margin: 2vh 2vw;
+    margin: 2vh 30px;
 }
 .arrowbutton {
     height: 3vh;
@@ -132,6 +159,8 @@
     justify-content: center;
     align-items: center;
     margin-left: -11vh;
+}
+.selectcharacter > .top-character-position {
     margin-top: -11vh;
 }
 .character-container {
@@ -147,17 +176,75 @@
     left: 0;
     height: 11vh;
 }
-.rounds {
+.roundsheader {
+    font-family: Poppins, sans-serif;
+    font-size: 4vh;
     border: 3px solid black;
     border-radius: 3px;
     padding: 1vh 1.5vw;
 }
-.roundsheader, .roundsselector {
+.logo{
+    width: 380px;
+    margin-bottom: 25px;
+}
+.notcookiebanner {
+    padding: 0.7em 2em 0.7em 2.6em;
+    background-color: rgba(248, 248, 248, 0.96);
+    display: flex;
+    align-items: center;
+    box-shadow: none;
+    border-radius: 4px;
+}
+.notcookiebanner > h3 {
+    font-family: "Courier New", sans-serif;
+    font-size: 15px;
+}
+.playerheader {
     font-family: Poppins, sans-serif;
-    font-size: 3.5vh;
+    font-size: 2.5vh;
+    text-align: center;
+    padding: 1vh 0;
 }
-.roundsselector {
-    border: none;
-    background-color: #fff3ec;
+.playercharacters {
+    border: 2px solid red;
+    display: grid;
+    grid-template-rows: 10em 2.5em;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin: 2em 10% 2em 10%;
 }
-
+.main-settings, .speed, .rounds {
+    display: block;
+    font-size: 2vh;
+    font-family: "Open Sans", sans-serif;
+}
+.main-settings {
+    width: 70%;
+}
+.speed, .rounds {
+    border: 2px solid black;
+    padding: 4px;
+    border-radius: 3px;
+    background-color: rgb(250, 243, 243);
+    float: right;
+}
+.reverse {
+    visibility: hidden;
+}
+.checkbox {
+    height: 3.2vh;
+    border: 3px solid black;
+    border-radius: 4px;
+    width: 3.2vh;
+    float: right;
+    margin-top: -1vh;
+}
+.checkbox-true {
+    background-image: url("../images/check.png");
+    background-size: cover;
+}
+.checkbox-false {
+    background-image: url("../images/check1.png");
+}
+.speed-container, .reverse-container, .rounds-container {
+    margin: 20% 0;
+}

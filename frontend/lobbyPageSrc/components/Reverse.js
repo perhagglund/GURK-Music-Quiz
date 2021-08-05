@@ -1,25 +1,16 @@
 import React, {useState} from "react";
 
 
-const Reverse = () => {
-    const [checked, setChecked] = useState(true)
 
-    const handleChange = () => {
-        setChecked(!checked)
-    }
-
+const Reverse = (props) => {
     return (
-        <div className={"reverse"}>
+        <div className={"reverse-container"}>
             <label>
-                <input type="checkbox"
-                checked={checked}
-                onChange={handleChange}
-                />
-                Play songs reversed (recommended)
+                Play songs reversed (recommended):
+                <input className={"reverse"} type={"checkbox"}/>
+                <div onClick={props.handleChange} className={"checkbox-" + props.checked.toString() + " checkbox"}> </div>
             </label>
         </div>
     )
 }
-
-
 export default Reverse
