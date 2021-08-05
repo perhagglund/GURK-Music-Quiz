@@ -1,8 +1,8 @@
-import React from "react";
+import React, {useState} from "react";
 
 
 const Reverse = () => {
-    const [checked, setChecked] = React.useState(true)
+    const [checked, setChecked] = useState(true)
 
     const handleChange = () => {
         setChecked(!checked)
