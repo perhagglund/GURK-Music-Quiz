@@ -12,7 +12,6 @@ def getEveryRoomName(request):
 
 
 def doesRoomExist(request, room_name):
-    print(room_name)
     roomNameList = list(Rooms.objects.all().values("room_id"))
     for x in roomNameList:
         if room_name == x["room_id"]:

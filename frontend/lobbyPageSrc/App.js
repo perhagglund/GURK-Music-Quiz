@@ -6,10 +6,10 @@ import getEveryRoomName from "./services/fetch";
 
 const App = () => {
     const roomName = window.location.pathname.replace("/", "").replace("/", "")
-    const nickname = localStorage.getItem("Name")
-    const eyes = localStorage.getItem("Eyes")
-    const mouth = localStorage.getItem("Mouth")
-    const color = localStorage.getItem("Color")
+    const nickname = sessionStorage.getItem("Name")
+    const eyes = sessionStorage.getItem("Eyes")
+    const mouth = sessionStorage.getItem("Mouth")
+    const color = sessionStorage.getItem("Color")
     const [playerList, setPlayerList] = useState([{
         "name": "adam",
         "color": 3,
@@ -28,7 +28,7 @@ const App = () => {
     }])
     const url = "ws://" + window.location.host + "/ws/game/" + roomName + "/"
     const client = new WebSocket(url)
-    /*useEffect(() => {
+    useEffect(() => {
         client.onopen = () => {
             if (sessionStorage.getItem("Leader")){
                 console.log("Leader Joined")
@@ -51,23 +51,20 @@ const App = () => {
         }
     }, [])
     client.onmessage = (e) => {
-        const data = JSON.parse(e.data)
-        if (data.ContentType === "PlayerJoined") {
-            setPlayerList(playerList.concat({
-                "name": data.name,
-                "color": Number(data.color),
-                "eyes": Number(data.eyes),
-                "mouth": Number(data.mouth)
-            }))
-        }
+        //const data = JSON.parse(e.data)
+        //if (data.ContentType === "PlayerJoined") {
+        //    setPlayerList(playerList.concat({
+        //        "name": data.name,
+        //        "color": Number(data.color),
+        //        "eyes": Number(data.eyes),
+        //        "mouth": Number(data.mouth)
+        //    }))
+        //}
     }
 
     client.onclose = () => {
-        localStorage.removeItem("TEMP-Name")
-        localStorage.removeItem("TEMP-Color")
-        localStorage.removeItem("TEMP-Eyes")
-        localStorage.removeItem("TEMP-Mouth")
-    }*/
+        console.log("Bye")
+    }
     return (
         <div className={"body"}>
             <div className={"body-container"}>
