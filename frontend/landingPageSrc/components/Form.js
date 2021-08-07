@@ -66,9 +66,13 @@ const Form = () => {
             setErrorMessage("Please write in a username")
         } else {
             localStorage.setItem("Name", nickname.toString())
+            sessionStorage.setItem("Name", nickname.toString())
             localStorage.setItem("Eyes", eyesSelect.toString())
+            sessionStorage.setItem("Eyes", eyesSelect.toString())
             localStorage.setItem("Mouth", mouthSelect.toString())
+            sessionStorage.setItem("Mouth", mouthSelect.toString())
             localStorage.setItem("Color", colorSelect.toString())
+            sessionStorage.setItem("Color", colorSelect.toString())
             sessionStorage.setItem("Leader", "true")
             window.location.href = "/" + makeUniqueID(8)
         }
