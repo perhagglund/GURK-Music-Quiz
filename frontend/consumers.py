@@ -51,12 +51,19 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def createNewUser(self, text_data_json, leader):
+        if leader:
+            return Users(room_id=self.room_name,
+                         nickname=text_data_json["nickname"],
+                         color=text_data_json["color"],
+                         eyes=text_data_json["eyes"],
+                         mouth=text_data_json["mouth"],
+                         leader=True)
         return Users(room_id=self.room_name,
                      nickname=text_data_json["nickname"],
                      color=text_data_json["color"],
                      eyes=text_data_json["eyes"],
                      mouth=text_data_json["mouth"],
-                     leader=leader)
+                     leader=False)
 
     def deleteRoom(self):
         room = Rooms.objects.get(room_id=self.room_name)
