@@ -12,7 +12,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: rgba(253, 93, 46, 0.9);
+    background-color: rgba(74, 222, 214, 0.94);
     background-image: url("../images/nutNote4.png");
 }
 .body-container {
@@ -20,7 +20,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-
 }
 .main-container {
     display: flex;
@@ -37,7 +36,7 @@
     max-height: 800px;
     height: 92vh;
     width: 28vw;
-    min-width: 590px;
+    min-width: 570px;
     max-width: 650px;
     background-color: rgb(250, 243, 243);
     padding: 3vh 0;
@@ -206,7 +205,6 @@
     padding: 1vh 0;
 }
 .playercharacters {
-    border: 2px solid red;
     display: grid;
     grid-template-rows: 10em 2.5em;
     grid-template-columns: 1fr 1fr 1fr;
@@ -247,4 +245,13 @@
 }
 .speed-container, .reverse-container, .rounds-container {
     margin: 20% 0;
+}
+.invitelink {
+    text-align: center;
+    font-size: 1rem;
+    padding: 2%;
+}
+.link {
+    color: coral;
+    cursor: pointer;
 }

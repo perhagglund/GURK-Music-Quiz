@@ -3,6 +3,7 @@ import Button from "../../landingPageSrc/components/Button";
 import Rounds from "./Rounds";
 import Reverse from "./Reverse";
 import Speed from "./Speed";
+import Invitelink from "./Invitelink";
 
 
 const Settings = () => {
@@ -25,6 +26,7 @@ const Settings = () => {
                 <Rounds selectRounds={selectRounds} setSelectRounds={setSelectRounds}/>
                 <Speed selectSpeed={selectSpeed} setSelectSpeed={setSelectSpeed}/>
                 <Reverse checked={checked} handleChange={handleChange} />
+                <Invitelink />
             </div>
             <Button classname={"startbutton"} name={"Start Game"} onClick={() => console.log("Start Game")} />
         </div>
