@@ -3,7 +3,7 @@ from django.db import models
 
 # Create your models here.
 class Rooms(models.Model):
-    room_id = models.CharField(max_length=16)
+    room_id = models.CharField(max_length=16, primary_key=True)
 
     def __str__(self):
         return self.room_id

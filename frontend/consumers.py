@@ -11,6 +11,8 @@ class gameConsumer(AsyncWebsocketConsumer):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
         # Join room group
+        self.nickname = ""
+        self.leader = False
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -30,55 +32,19 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     # Receive message from WebSocket
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        contentType = text_data_json["ContentType"]
+        self.text_data_json = json.loads(text_data)
+        contentType = self.text_data_json["ContentType"]
         if contentType == "LeaderJoined":
+            self.leader = True
             roomName = await self.createNewRoom()
             await self.save(roomName)
-            user = await self.createNewUser(text_data_json, leader=True)
+            self.nickname = self.text_data_json["nickname"]
+            user = await self.createNewUser()
             await self.save(user)
-            self.nickname = text_data_json["nickname"]
-            self.leader = True
         elif contentType == "PlayerJoined":
-            user = await self.createNewUser(text_data_json, leader=False)
+            self.nickname = self.text_data_json["nickname"]
+            user = await self.createNewUser()
             await self.save(user)
-            self.nickname = text_data_json["nickname"]
-            self.leader = False
-
-    @database_sync_to_async
-    def createNewRoom(self):
-        return Rooms(room_id=self.room_name)
-
-    @database_sync_to_async
-    def createNewUser(self, text_data_json, leader):
-        if leader:
-            return Users(room_id=self.room_name,
-                         nickname=text_data_json["nickname"],
-                         color=text_data_json["color"],
-                         eyes=text_data_json["eyes"],
-                         mouth=text_data_json["mouth"],
-                         leader=True)
-        return Users(room_id=self.room_name,
-                     nickname=text_data_json["nickname"],
-                     color=text_data_json["color"],
-                     eyes=text_data_json["eyes"],
-                     mouth=text_data_json["mouth"],
-                     leader=False)
-
-    def deleteRoom(self):
-        room = Rooms.objects.get(room_id=self.room_name)
-        room.delete()
-        print("deleted", self.room_name)
-
-    def leaderLeftInRoom(self):
-        try:
-            userList = list(Users.objects.get(room_id=self.room_name))
-        except frontend.models.Users.DoesNotExist as e:
-            print("Hello")
-            self.deleteRoom()
-            print("Room deleted", self.room_name)
-        else:
-            self.assignNewLeader()
 
     @database_sync_to_async
     def playerLeave(self):
@@ -87,11 +53,57 @@ class gameConsumer(AsyncWebsocketConsumer):
         if self.leader:
             self.leaderLeftInRoom()
 
-    def assignNewLeader(self):
-        user = Users.objects.get(room_id=self.room_name)
-        user[0].leader = True
-        user.save()
+    @database_sync_to_async
+    def createNewUser(self):
+        if self.leader:
+            return Users(room_id=self.room_name,
+                         nickname=self.text_data_json["nickname"],
+                         color=self.text_data_json["color"],
+                         eyes=self.text_data_json["eyes"],
+                         mouth=self.text_data_json["mouth"],
+                         leader=True)
+        else:
+            userList = Users.objects.all().filter(room_id=self.room_name).values("nickname")
+            userListStr = " ".join([str(x["nickname"]) for x in userList])
+            if self.nickname in userListStr:
+                count = userListStr.count(self.nickname)
+                self.nickname += f"({count})"
+            return self.createNormalPlayer()
 
+    def createNormalPlayer(self):
+        return Users(room_id=self.room_name,
+                     nickname=self.nickname,
+                     color=self.text_data_json["color"],
+                     eyes=self.text_data_json["eyes"],
+                     mouth=self.text_data_json["mouth"],
+                     leader=False)
+
+    @database_sync_to_async
+    def createNewRoom(self):
+        return Rooms(room_id=self.room_name)
+
+    #
+    # def deleteRoom(self):
+    #    room = Rooms.objects.get(room_id=self.room_name)
+    #    room.delete()
+    #    print("deleted", self.room_name)
+    #
+    # def leaderLeftInRoom(self):
+    #    try:
+    #        userList = Users.objects.all().filter(room_id=self.room_name)
+    #    except frontend.models.Users.DoesNotExist as e:
+    #        print("Hello")
+    #        self.deleteRoom()
+    #        print("Room deleted", self.room_name)
+    #    else:
+    #        self.assignNewLeader()
+    #
+    #
+    # def assignNewLeader(self):
+    #    user = Users.objects.all().filter(room_id=self.room_name).first()
+    #    user.leader = True
+    #    user.save()
+    #
     @database_sync_to_async
     def save(self, entity):
         return entity.save()
