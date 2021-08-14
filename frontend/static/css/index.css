@@ -39,7 +39,7 @@
     min-width: 570px;
     max-width: 650px;
     background-color: rgb(250, 243, 243);
-    padding: 3vh 0;
+    padding: 4em 0;
     box-shadow: 6px 4px 4px lightgray;
 }
 .notcookie-container {
@@ -177,7 +177,7 @@
 }
 .roundsheader {
     font-family: Poppins, sans-serif;
-    font-size: 4vh;
+    font-size: 2.3rem;
     border: 3px solid black;
     border-radius: 3px;
     padding: 1vh 1.5vw;
@@ -212,7 +212,7 @@
 }
 .main-settings, .speed, .rounds {
     display: block;
-    font-size: 2vh;
+    font-size: 1.3rem;
     font-family: "Open Sans", sans-serif;
 }
 .main-settings {
@@ -229,11 +229,12 @@
     visibility: hidden;
 }
 .checkbox {
-    height: 3.2vh;
+    height: 1.6em;
     border: 3px solid black;
     border-radius: 4px;
-    width: 3.2vh;
+    width: 1.6em;
     float: right;
+    margin-left: 1.5em;
     margin-top: -1vh;
 }
 .checkbox-true {
@@ -249,7 +250,7 @@
 .invitelink {
     text-align: center;
     font-size: 1rem;
-    padding: 2%;
+    padding: 2% 0;
 }
 .link {
     color: coral;
