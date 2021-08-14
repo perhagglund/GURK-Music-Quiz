@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import Character from "../../landingPageSrc/components/character";
+import Character from "../../../landingPageSrc/components/character";
 
 const Players = (props) => {
     const [playerList, setPlayerList] = useState(props.playerList.map(player =>

@@ -3,9 +3,8 @@ import NameField from "./NameField"
 import Button from "./Button";
 import SelectCharacter from "./SelectCharacter";
 import fetch from "../../lobbyPageSrc/services/fetch";
-import {useHistory, useLocation} from "react-router-dom";
 
-const Form = () => {
+const Form = (props) => {
     const [nickname, setNickname] = useState("")
     const [colorSelect, setColorSelect] = useState(0)
     const [eyesSelect, setEyesSelect] = useState(0)
@@ -30,39 +29,12 @@ const Form = () => {
 
     const [errorMessage, setErrorMessage] = useState("")
 
-    const makeID = (length) => {
-        let result = '';
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        const charactersLength = characters.length;
-        for (let i = 0; i < length; i++) {
-            result += characters.charAt(Math.floor(Math.random() *
-                charactersLength));
-        }
-        let exists;
-        fetch.doesRoomExist(result).then(r => {
-            exists = r.data
-        })
-        return {
-            "result": result,
-            "exists": exists
-        }
-    }
-
-    const makeUniqueID = (length) => {
-        let id = makeID(length)
-        if(id.exists){
-            while(id.exists) {
-                id = makeID(length)
-            }
-        }
-        return id.result
-    }
     const onNickChange = (event) => {
         setNickname(event.target.value)
         setErrorMessage("")
     }
 
-    const onCreateClick = () => {
+    const onJoinGame = () => {
         if (nickname.length === 0){
             setErrorMessage("Please write in a username")
         } else {
@@ -74,8 +46,8 @@ const Form = () => {
             sessionStorage.setItem("Mouth", mouthSelect.toString())
             localStorage.setItem("Color", colorSelect.toString())
             sessionStorage.setItem("Color", colorSelect.toString())
-            sessionStorage.setItem("Leader", "true")
-            window.location.href = "/" + makeUniqueID(8) + "/"
+            sessionStorage.setItem("Leader", "false")
+            window.location.href = "/" + props.roomName
         }
     }
 
@@ -136,10 +108,8 @@ const Form = () => {
                              changeColorPlus={changeColorPlus}
             />
             <div className={"button-container"}>
-                <Button classname={"joinbutton"} name={"Join Game"} onClick={() => {
-                    console.log("per bög")
-                }}/>
-                <Button classname={"createbutton"} name={"Create Game"} onClick={onCreateClick}/>
+                <Button classname={"joinbutton"} name={"Join Game"} onClick={onJoinGame}/>
+                <Button classname={"createbutton"} name={"Create Game"} onClick={() => console.log("Create Game")}/>
             </div>
         </div>
     )
