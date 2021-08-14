@@ -1,11 +1,14 @@
-import React, {useEffect, useRef, useState} from "react";
-import Setting from "./components/Setting";
-import Players from "./components/Players";
-import getEveryRoomName from "./services/fetch";
+import React, {useEffect, useState} from "react";
+import {Redirect} from "react-router-dom";
+import Setting from "./components/lobbyComponents/Setting";
+import Players from "./components/lobbyComponents/Players";
 
 
 const App = () => {
-    const roomName = window.location.pathname.replace("/", "").replace("/", "")
+    const roomName = window.location.pathname.split("/")[1]
+    if(!sessionStorage.getItem("Leader")){
+        window.location.pathname = roomName + "/joinGame"
+    }
     const nickname = sessionStorage.getItem("Name")
     const eyes = sessionStorage.getItem("Eyes")
     const mouth = sessionStorage.getItem("Mouth")
@@ -27,10 +30,11 @@ const App = () => {
         "mouth": 1
     }])
     const url = "ws://" + window.location.host + "/ws/game/" + roomName + "/"
+    console.log(url)
     const client = new WebSocket(url)
     useEffect(() => {
         client.onopen = () => {
-            if (sessionStorage.getItem("Leader")){
+            if (sessionStorage.getItem("Leader") === "true") {
                 console.log("Leader Joined")
                 client.send(JSON.stringify({
                     "ContentType": "LeaderJoined",
@@ -51,15 +55,15 @@ const App = () => {
         }
     }, [])
     client.onmessage = (e) => {
-        //const data = JSON.parse(e.data)
-        //if (data.ContentType === "PlayerJoined") {
-        //    setPlayerList(playerList.concat({
-        //        "name": data.name,
-        //        "color": Number(data.color),
-        //        "eyes": Number(data.eyes),
-        //        "mouth": Number(data.mouth)
-        //    }))
-        //}
+        /*const data = JSON.parse(e.data)
+        if (data.ContentType === "PlayerJoined") {
+            setPlayerList(playerList.concat({
+                "name": data.name,
+                "color": Number(data.color),
+                "eyes": Number(data.eyes),
+                "mouth": Number(data.mouth)
+            }))
+        }*/
     }
 
     client.onclose = () => {

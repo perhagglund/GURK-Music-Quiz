@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import Button from "../../landingPageSrc/components/Button";
+import Button from "../../../landingPageSrc/components/Button";
 import Rounds from "./Rounds";
 import Reverse from "./Reverse";
 import Speed from "./Speed";

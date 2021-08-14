@@ -4,7 +4,8 @@ const webpack = require("webpack");
 module.exports = {
     entry: {
         "landingPageMain": "./landingPageSrc/index.js",
-        "lobbyPageMain": "./lobbyPageSrc/index.js"
+        "lobbyPageMain": "./lobbyPageSrc/index.js",
+        "joinGamePage": "./joinGamePageSrc/index.js"
     },
     output: {
         path: path.resolve(__dirname, "./static/frontend"),
