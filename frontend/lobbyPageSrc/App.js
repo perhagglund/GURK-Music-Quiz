@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Redirect} from "react-router-dom";
 import Setting from "./components/lobbyComponents/Setting";
 import Players from "./components/lobbyComponents/Players";
+import Chat from "./components/lobbyComponents/chat";
 
 
 const App = () => {
@@ -29,6 +30,22 @@ const App = () => {
         "eyes": 0,
         "mouth": 1
     }])
+    const [messages, setMessages] = [{
+        "type": "chatMessage",
+        "username": "per",
+        "message": "Hej, jag är lite bög",
+        "time": "geytime"
+    }, {
+        "type": "chatMessage",
+        "username": "doniel",
+        "message": "Hej, jag är lite bög",
+        "time": "Geytime"
+    }, {
+        "type": "chatMessage",
+        "username": "Adam",
+        "message": "Hej Hej mina bögar",
+        "time": "HeteroTime"
+    }]
     const url = "ws://" + window.location.host + "/ws/game/" + roomName + "/"
     console.log(url)
     const client = new WebSocket(url)
@@ -54,20 +71,18 @@ const App = () => {
             }
         }
     }, [])
+
     client.onmessage = (e) => {
-        /*const data = JSON.parse(e.data)
-        if (data.ContentType === "PlayerJoined") {
-            setPlayerList(playerList.concat({
-                "name": data.name,
-                "color": Number(data.color),
-                "eyes": Number(data.eyes),
-                "mouth": Number(data.mouth)
-            }))
-        }*/
+        const data = JSON.parse(e.data)
+        console.log("Hej")
+        if (data.ContentType === "NewLeader") {
+            sessionStorage.setItem("Leader", "true")
+            console.log("LeaderLeft")
+        }
     }
 
     client.onclose = () => {
-        console.log("Bye")
+        sessionStorage.clear()
     }
     return (
         <div className={"body"}>
@@ -76,6 +91,7 @@ const App = () => {
                     <Setting/>
                     <Players playerList={playerList}/>
                 </div>
+                <Chat messages={messages}/>
             </div>
         </div>
     )

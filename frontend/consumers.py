@@ -25,10 +25,7 @@ class gameConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-        if self.leader:
-            await self.playerLeave()
-        elif not self.leader:
-            await self.playerLeave()
+        await self.playerLeave()
 
     # Receive message from WebSocket
     async def receive(self, text_data):
@@ -46,12 +43,59 @@ class gameConsumer(AsyncWebsocketConsumer):
             user = await self.createNewUser()
             await self.save(user)
 
+    async def playerLeave(self):
+        await self.deletePlayer()
+        if self.leader:
+            await self.leaderLeftInRoom()
+
     @database_sync_to_async
-    def playerLeave(self):
+    def deletePlayer(self):
         user = Users.objects.get(nickname=self.nickname, room_id=self.room_name)
         user.delete()
-        if self.leader:
-            self.leaderLeftInRoom()
+
+    @database_sync_to_async
+    def deleteRoom(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        room.delete()
+
+    async def assignNewLeader(self):
+        user = await self.DBAssignNewLeader()
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "NewLeader",
+                "room_id": self.room_name,
+                "NewLeader": user.nickname
+            }
+        )
+
+    async def NewLeader(self, event):
+        if event["NewLeader"] == self.nickname:
+            self.leader = True
+            await self.send(text_data=json.dumps({
+                "ContentType": "NewLeader",
+                "room_id": event["room_id"],
+                "NewLeader": self.nickname
+            }))
+
+    @database_sync_to_async
+    def DBAssignNewLeader(self):
+        user = Users.objects.all().filter(room_id=self.room_name).first()
+        user.leader = True
+        user.save()
+        return user
+
+    async def leaderLeftInRoom(self):
+        userList = await self.assignUserList()
+        if len(userList) == 0:
+            await self.deleteRoom()
+        else:
+            await self.assignNewLeader()
+
+    @database_sync_to_async
+    def assignUserList(self):
+        userList = Users.objects.all().filter(room_id=self.room_name).values("nickname")
+        return list(userList)
 
     @database_sync_to_async
     def createNewUser(self):
@@ -82,28 +126,6 @@ class gameConsumer(AsyncWebsocketConsumer):
     def createNewRoom(self):
         return Rooms(room_id=self.room_name)
 
-    #
-    # def deleteRoom(self):
-    #    room = Rooms.objects.get(room_id=self.room_name)
-    #    room.delete()
-    #    print("deleted", self.room_name)
-    #
-    # def leaderLeftInRoom(self):
-    #    try:
-    #        userList = Users.objects.all().filter(room_id=self.room_name)
-    #    except frontend.models.Users.DoesNotExist as e:
-    #        print("Hello")
-    #        self.deleteRoom()
-    #        print("Room deleted", self.room_name)
-    #    else:
-    #        self.assignNewLeader()
-    #
-    #
-    # def assignNewLeader(self):
-    #    user = Users.objects.all().filter(room_id=self.room_name).first()
-    #    user.leader = True
-    #    user.save()
-    #
     @database_sync_to_async
     def save(self, entity):
         return entity.save()
