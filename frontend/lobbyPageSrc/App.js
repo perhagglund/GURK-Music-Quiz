@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {Redirect} from "react-router-dom";
 import Setting from "./components/lobbyComponents/Setting";
 import Players from "./components/lobbyComponents/Players";
 import Chat from "./components/lobbyComponents/chat";
+import fetch from "./services/fetch"
 
 
 const App = () => {
@@ -14,23 +14,8 @@ const App = () => {
     const eyes = sessionStorage.getItem("Eyes")
     const mouth = sessionStorage.getItem("Mouth")
     const color = sessionStorage.getItem("Color")
-    const [playerList, setPlayerList] = useState([{
-        "name": "adam",
-        "color": 3,
-        "eyes": 1,
-        "mouth": 3
-    }, {
-        "name": "per",
-        "color": 1,
-        "eyes": 2,
-        "mouth": 3
-    }, {
-        "name": "doniel",
-        "color": 2,
-        "eyes": 0,
-        "mouth": 1
-    }])
-    const [messages, setMessages] = [{
+    const [playerList, setPlayerList] = useState([{}])
+    const [messages, setMessages] = useState([{
         "type": "chatMessage",
         "username": "per",
         "message": "Hej, jag är lite bög",
@@ -45,14 +30,12 @@ const App = () => {
         "username": "Adam",
         "message": "Hej Hej mina bögar",
         "time": "HeteroTime"
-    }]
+    }])
     const url = "ws://" + window.location.host + "/ws/game/" + roomName + "/"
-    console.log(url)
     const client = new WebSocket(url)
     useEffect(() => {
         client.onopen = () => {
             if (sessionStorage.getItem("Leader") === "true") {
-                console.log("Leader Joined")
                 client.send(JSON.stringify({
                     "ContentType": "LeaderJoined",
                     "nickname": nickname,
@@ -78,6 +61,40 @@ const App = () => {
         if (data.ContentType === "NewLeader") {
             sessionStorage.setItem("Leader", "true")
             console.log("LeaderLeft")
+        } else if(data.ContentType === "updatePlayers"){
+            fetch.updateRoomPlayers(roomName).then(r => {
+                let players = []
+                r.data.data.forEach(player => {
+                    players = players.concat({
+                        "id": players.length,
+                        "nickname": player.nickname,
+                        "color": player.color,
+                        "mouth": player.mouth,
+                        "eyes": player.eyes,
+                        "leader": player.leader
+                    })
+                })
+                setPlayerList(players)
+                console.log(data.content)
+                //if(data.content === "playerJoined"){
+                //    setMessages(messages.concat(
+                //        {
+                //            "type": "joinMessage",
+                //            "username": data.player,
+                //            "message": "Has joined the server",
+                //            "time": "HeteroTime"
+                //        }
+                //    ))
+                //} else if(data.content === "playerLeave") {
+                //    setMessages(messages.concat({
+                //        "type": "leaveMessage",
+                //        "username": data.player,
+                //        "message": "Has left the server",
+                //        "time": "HeteroTime"
+                //    }))
+                //}
+                //console.log(messages)
+            })
         }
     }
 

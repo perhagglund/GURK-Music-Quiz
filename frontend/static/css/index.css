@@ -248,3 +248,11 @@
 .speed-container, .reverse-container, .rounds-container {
     margin: 20% 0;
 }
+
+.joinMessage {
+    color: forestgreen;
+}
+
+.leaveMessage {
+    color: red;
+}
