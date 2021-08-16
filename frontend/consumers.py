@@ -38,15 +38,44 @@ class gameConsumer(AsyncWebsocketConsumer):
             self.nickname = self.text_data_json["nickname"]
             user = await self.createNewUser()
             await self.save(user)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "updatePlayers",
+                    "content": "playerJoined"
+                }
+            )
         elif contentType == "PlayerJoined":
             self.nickname = self.text_data_json["nickname"]
             user = await self.createNewUser()
             await self.save(user)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "updatePlayers",
+                    "content": "playerJoined"
+                }
+            )
 
     async def playerLeave(self):
         await self.deletePlayer()
         if self.leader:
             await self.leaderLeftInRoom()
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "updatePlayers",
+                "content": "playerLeave",
+                "player": self.nickname
+            }
+        )
+
+    async def updatePlayers(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "updatePlayers",
+            "content": event["content"],
+            "player": self.nickname
+        }))
 
     @database_sync_to_async
     def deletePlayer(self):

@@ -247,6 +247,7 @@
 .speed-container, .reverse-container, .rounds-container {
     margin: 20% 0;
 }
+
 .invitelink {
     text-align: center;
     font-size: 1rem;
@@ -255,4 +256,11 @@
 .link {
     color: coral;
     cursor: pointer;
+}
+.joinMessage {
+    color: forestgreen;
+}
+
+.leaveMessage {
+    color: red;
 }
