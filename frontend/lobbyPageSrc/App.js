@@ -3,9 +3,26 @@ import Setting from "./components/lobbyComponents/Setting";
 import Players from "./components/lobbyComponents/Players";
 import Chat from "./components/lobbyComponents/chat";
 import fetch from "./services/fetch"
+import CookieBanner from "../landingPageSrc/components/CookieBanner";
 
 
 const App = () => {
+    const [showCookieBanner, setShowCookieBanner] = useState('none')
+    useEffect(() => {
+        if(!localStorage.getItem("cookieAccepted")){
+            setShowCookieBanner("")
+        }
+    }, [])
+    const changeVisibility = (event) => {
+        event.preventDefault()
+        setShowCookieBanner('none')
+        localStorage.setItem("cookieAccepted", "true")
+    }
+
+    const cookieBannerStyle = {
+        "display": showCookieBanner
+    }
+
     const roomName = window.location.pathname.split("/")[1]
     if(!sessionStorage.getItem("Leader")){
         window.location.pathname = roomName + "/joinGame"
@@ -105,10 +122,13 @@ const App = () => {
         <div className={"body"}>
             <div className={"body-container"}>
                 <div className={"main-container"}>
+                    <Chat messages={messages}/>
                     <Setting/>
                     <Players playerList={playerList}/>
                 </div>
-                <Chat messages={messages}/>
+            </div>
+            <div className={"notcookie-container"} style={cookieBannerStyle}>
+                <CookieBanner onClick={changeVisibility} />
             </div>
         </div>
     )
