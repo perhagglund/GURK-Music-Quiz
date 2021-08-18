@@ -8,9 +8,13 @@
     <title>Title</title>
 </head>
 <body>
+    {{ room_name|json_script:"room-name" }}
     <div id="main">
         <div id="app"></div>
     </div>
+    <script>
+        roomName = JSON.parse(document.getElementById("room-name").textContent)
+    </script>
     <script src="{% static 'frontend/lobbyPageMain.js' %}"></script>
 </body>
 </html>

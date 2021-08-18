@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import Setting from "./components/lobbyComponents/Setting";
 import Players from "./components/lobbyComponents/Players";
 import Chat from "./components/lobbyComponents/chat";
+import { client } from "./services/webSocketConnect";
 import fetch from "./services/fetch"
 
 
@@ -15,24 +16,20 @@ const App = () => {
     const mouth = sessionStorage.getItem("Mouth")
     const color = sessionStorage.getItem("Color")
     const [playerList, setPlayerList] = useState([{}])
-    const [messages, setMessages] = useState([{
-        "type": "chatMessage",
-        "username": "per",
-        "message": "Hej, jag är lite bög",
-        "time": "geytime"
-    }, {
-        "type": "chatMessage",
-        "username": "doniel",
-        "message": "Hej, jag är lite bög",
-        "time": "Geytime"
-    }, {
-        "type": "chatMessage",
-        "username": "Adam",
-        "message": "Hej Hej mina bögar",
-        "time": "HeteroTime"
-    }])
-    const url = "ws://" + window.location.host + "/ws/game/" + roomName + "/"
-    const client = new WebSocket(url)
+    const [messages, setMessages] = useState([])
+    const [newMessage, setNewMessage] = useState("")
+    const onMessageChange = (event) => {
+        setNewMessage(event.target.value)
+        console.log(newMessage)
+    }
+    const onChatSubmit = (event) => {
+        event.preventDefault()
+        client.send(JSON.stringify({
+            "ContentType": "chatMessage",
+            "message": newMessage,
+            "sender": nickname
+        }))
+    }
     useEffect(() => {
         client.onopen = () => {
             if (sessionStorage.getItem("Leader") === "true") {
@@ -54,53 +51,55 @@ const App = () => {
             }
         }
     }, [])
-
-    client.onmessage = (e) => {
-        const data = JSON.parse(e.data)
-        console.log("Hej")
-        if (data.ContentType === "NewLeader") {
-            sessionStorage.setItem("Leader", "true")
-            console.log("LeaderLeft")
-        } else if(data.ContentType === "updatePlayers"){
-            fetch.updateRoomPlayers(roomName).then(r => {
-                let players = []
-                r.data.data.forEach(player => {
-                    players = players.concat({
-                        "id": players.length,
-                        "nickname": player.nickname,
-                        "color": player.color,
-                        "mouth": player.mouth,
-                        "eyes": player.eyes,
-                        "leader": player.leader
+    useEffect(() => {
+        client.onmessage = (e) => {
+            const data = JSON.parse(e.data)
+            console.log("Hej")
+            if (data.ContentType === "NewLeader") {
+                sessionStorage.setItem("Leader", "true")
+                console.log("LeaderLeft")
+            } else if(data.ContentType === "updatePlayers"){
+                fetch.updateRoomPlayers(roomName).then(r => {
+                    let players = []
+                    r.data.data.forEach(player => {
+                        players = players.concat({
+                            "id": players.length,
+                            "nickname": player.nickname,
+                            "color": player.color,
+                            "mouth": player.mouth,
+                            "eyes": player.eyes,
+                            "leader": player.leader
+                        })
                     })
+                    setPlayerList(players)
+                    console.log(data.content)
+                    if(data.content === "playerJoined"){
+                        setMessages(messages.concat(
+                            {
+                                "type": "joinMessage",
+                                "username": data.player,
+                                "message": "Has joined the server",
+                                "time": "HeteroTime"
+                            }
+                        ))
+                    } else if(data.content === "playerLeave") {
+                        setMessages(messages.concat({
+                            "type": "leaveMessage",
+                            "username": data.player,
+                            "message": "Has left the server",
+                            "time": "HeteroTime"
+                        }))
+                    }
+                    console.log(messages)
                 })
-                setPlayerList(players)
-                console.log(data.content)
-                //if(data.content === "playerJoined"){
-                //    setMessages(messages.concat(
-                //        {
-                //            "type": "joinMessage",
-                //            "username": data.player,
-                //            "message": "Has joined the server",
-                //            "time": "HeteroTime"
-                //        }
-                //    ))
-                //} else if(data.content === "playerLeave") {
-                //    setMessages(messages.concat({
-                //        "type": "leaveMessage",
-                //        "username": data.player,
-                //        "message": "Has left the server",
-                //        "time": "HeteroTime"
-                //    }))
-                //}
-                //console.log(messages)
-            })
-        }
-    }
+            } else if(data.ContentType === "chatMessage"){
 
-    client.onclose = () => {
-        sessionStorage.clear()
-    }
+            }
+        }
+        client.onclose = () => {
+            sessionStorage.clear()
+        }
+    })
     return (
         <div className={"body"}>
             <div className={"body-container"}>
@@ -108,7 +107,7 @@ const App = () => {
                     <Setting/>
                     <Players playerList={playerList}/>
                 </div>
-                <Chat messages={messages}/>
+                <Chat messages={messages} handleMessageChange={onMessageChange} inputValue={newMessage} onChatSubmit={onChatSubmit}/>
             </div>
         </div>
     )
