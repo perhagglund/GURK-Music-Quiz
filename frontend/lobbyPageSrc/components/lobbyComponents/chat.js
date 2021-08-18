@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import ChatInput from "./chatInput"
 import ChatField from "./ChatField";
 
@@ -7,7 +7,7 @@ const Chat = (props) => {
     return (
         <div>
             <ChatField messages={props.messages}/>
-            <ChatInput />
+            <ChatInput handleChange={props.handleMessageChange} value={props.inputValue} onSubmit={props.onChatSubmit}/>
         </div>
     )
 }

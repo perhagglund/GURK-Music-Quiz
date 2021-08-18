@@ -3,6 +3,9 @@ import ChatMessage from "./chatMessage";
 
 
 const ChatField = (props) => {
+    if(props.messages.length === 0){
+        return <div></div>
+    }
     return (
         <div>
             {props.messages.map(message => <ChatMessage type={message.type} user={message.username} message={message.message}/>)}

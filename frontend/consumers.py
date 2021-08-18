@@ -42,7 +42,8 @@ class gameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {
                     "type": "updatePlayers",
-                    "content": "playerJoined"
+                    "content": "playerJoined",
+                    "player": self.nickname
                 }
             )
         elif contentType == "PlayerJoined":
@@ -53,9 +54,27 @@ class gameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {
                     "type": "updatePlayers",
-                    "content": "playerJoined"
+                    "content": "playerJoined",
+                    "player": self.nickname
                 }
             )
+        elif contentType == "chatMessage":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "chatMessage",
+                    "message": self.text_data_json["message"],
+                    "player": self.nickname
+                }
+            )
+
+    async def chatMessage(self, event):
+        print(event["player"], "has sent message", event["message"])
+        await self.send(text_data=json.dumps({
+            "ContentType": "chatMessage",
+            "message": event["message"],
+            "player": event["player"]
+        }))
 
     async def playerLeave(self):
         await self.deletePlayer()
@@ -74,7 +93,7 @@ class gameConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             "ContentType": "updatePlayers",
             "content": event["content"],
-            "player": self.nickname
+            "player": event["player"]
         }))
 
     @database_sync_to_async

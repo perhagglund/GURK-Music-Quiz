@@ -1,9 +1,11 @@
 import React from "react";
+import Button from "../../../landingPageSrc/components/Button";
 
-const ChatInput = () => {
+const ChatInput = (props) => {
     return (
         <div>
-            <input placeholder={"Jonas gei"}/>
+            <input placeholder={"Send Message"} onChange={props.handleChange} value={props.value}/>
+            <Button classname={""} onSubmit={props.onSubmit} name={"Submit"}/>
         </div>
     )
 }

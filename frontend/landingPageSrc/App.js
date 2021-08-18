@@ -13,7 +13,8 @@ const App = () => {
             setShowCookieBanner("")
         }
     }, [])
-    const changeVisibility = () => {
+    const changeVisibility = (event) => {
+        event.preventDefault()
         setShowCookieBanner('none')
         localStorage.setItem("cookieAccepted", "true")
     }
