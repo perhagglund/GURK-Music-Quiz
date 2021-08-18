@@ -5,7 +5,7 @@ import ChatField from "./ChatField";
 const Chat = (props) => {
 
     return (
-        <div>
+        <div className={"chat-container"}>
             <ChatField messages={props.messages}/>
             <ChatInput />
         </div>

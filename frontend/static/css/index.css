@@ -39,7 +39,7 @@
     min-width: 570px;
     max-width: 650px;
     background-color: rgb(250, 243, 243);
-    padding: 4em 0;
+    padding: 3em 0;
     box-shadow: 6px 4px 4px lightgray;
 }
 .notcookie-container {
@@ -49,7 +49,7 @@
     justify-content: center;
 }
 .settings-container {
-    margin-left: 8vw;
+    margin: 0 2%;
 }
 .players-container {
     width: 11vw;
@@ -256,9 +256,20 @@
     color: coral;
     cursor: pointer;
 }
+.link:hover {
+    color: #2fbb2f;
+}
+.copyconfirmation {
+    color: #2fbb2f;
+}
 .joinMessage {
     color: forestgreen;
 }
 .leaveMessage {
     color: red;
+}
+.chat-container {
+    border: 1px solid red;
+    font-family: "Open Sans", sans-serif;
+    font-size: 1.5rem;
 }
