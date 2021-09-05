@@ -13,7 +13,13 @@ def lobby(request, room_name):
     })
 
 
-def game(request, room_name):
+def joinGame(request, room_name):
     return render(request, 'frontend/joinGamePage.html', {
         "room_name": room_name,
+    })
+
+
+def game(request, room_name):
+    return render(request, "frontend/gamePage.html", {
+        "room_name": room_name
     })
