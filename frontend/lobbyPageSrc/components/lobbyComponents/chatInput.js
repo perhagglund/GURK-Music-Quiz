@@ -5,7 +5,7 @@ const ChatInput = (props) => {
     return (
         <div>
             <input placeholder={"Send Message"} onChange={props.handleChange} value={props.value}/>
-            <Button classname={""} onSubmit={props.onSubmit} name={"Submit"}/>
+            <Button classname={""} onClick={props.onSubmit} name={"Submit"}/>
         </div>
     )
 }

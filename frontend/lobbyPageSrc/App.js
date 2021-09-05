@@ -32,7 +32,7 @@ const App = () => {
     const eyes = sessionStorage.getItem("Eyes")
     const mouth = sessionStorage.getItem("Mouth")
     const color = sessionStorage.getItem("Color")
-    const [playerList, setPlayerList] = useState([{}])
+    const [playerList, setPlayerList] = useState([])
     const [messages, setMessages] = useState([])
     const [newMessage, setNewMessage] = useState("")
     const onMessageChange = (event) => {
@@ -110,7 +110,12 @@ const App = () => {
                     console.log(messages)
                 })
             } else if(data.ContentType === "chatMessage"){
-
+                setMessages(messages.concat({
+                    "type": "chatMessage",
+                    "username": data.player,
+                    "message": data.message,
+                    "time": "geytime"
+                }))
             }
         }
         client.onclose = () => {
@@ -121,11 +126,10 @@ const App = () => {
         <div className={"body"}>
             <div className={"body-container"}>
                 <div className={"main-container"}>
-                    <Chat messages={messages}/>
+                    <Chat messages={messages} handleMessageChange={onMessageChange} inputValue={newMessage} onChatSubmit={onChatSubmit}/>
                     <Setting/>
                     <Players playerList={playerList}/>
                 </div>
-                <Chat messages={messages} handleMessageChange={onMessageChange} inputValue={newMessage} onChatSubmit={onChatSubmit}/>
             </div>
             <div className={"notcookie-container"} style={cookieBannerStyle}>
                 <CookieBanner onClick={changeVisibility} />

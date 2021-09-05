@@ -6,7 +6,6 @@ const Players = (props) => {
         return (<div>
             <h2 className={"playerheader"}>Players</h2>
             <div className={"playercharacters"}>
-
             </div>
         </div>)
     }
