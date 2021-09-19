@@ -136,10 +136,8 @@ const Form = () => {
                              changeColorPlus={changeColorPlus}
             />
             <div className={"button-container"}>
-                <Button classname={"joinbutton"} name={"Join Game"} onClick={() => {
-                    console.log("per INTE bög")
-                }}/>
-                <Button classname={"createbutton"} name={"Create Game"} onClick={onCreateClick}/>
+                <Button classname={"joinbutton"} name={"Join Game"} onClick={() => {console.log("per INTE bög")}} disabled={true}/>
+                <Button classname={"createbutton"} name={"Create Game"} onClick={onCreateClick} disabled={false}/>
             </div>
         </div>
     )

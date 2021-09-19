@@ -2,15 +2,10 @@ import React from "react";
 
 
 const Speed = (props) => {
-
-    const handleSpeedChange = (e) => {
-        props.setSelectSpeed(e.target.value)
-    }
-
     return (
         <div className={"speed-container"}>
             <label htmlFor="speed">Playback speed: </label>
-            <select onChange={handleSpeedChange} className={"speed"} id={"speed"} value={props.selectSpeed}>
+            <select onChange={props.handleSpeedChange} className={"speed"} id={"speed"} value={props.selectSpeed} disabled={sessionStorage.getItem("Leader") !== "true"}>
                 <option value={0.25}>0.25x</option>
                 <option value={0.5}>0.5x</option>
                 <option value={0.75}>0.75x</option>

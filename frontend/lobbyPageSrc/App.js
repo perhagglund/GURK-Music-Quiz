@@ -28,13 +28,16 @@ const App = () => {
     if(!sessionStorage.getItem("Leader")){
         window.location.pathname = roomName + "/joinGame"
     }
-    const nickname = sessionStorage.getItem("Name")
+    const [nickname, setNickname] = useState(sessionStorage.getItem("Name"))
     const eyes = sessionStorage.getItem("Eyes")
     const mouth = sessionStorage.getItem("Mouth")
     const color = sessionStorage.getItem("Color")
     const [playerList, setPlayerList] = useState([])
     const [messages, setMessages] = useState([])
     const [newMessage, setNewMessage] = useState("")
+    const [checked, setChecked] = useState(true)
+    const [selectSpeed, setSelectSpeed] = useState(1)
+    const [selectRounds, setSelectRounds] = useState(5)
     const onMessageChange = (event) => {
         setNewMessage(event.target.value)
         console.log(newMessage)
@@ -64,6 +67,9 @@ const App = () => {
                     "eyes": eyes,
                     "mouth": mouth,
                     "color": color
+                }))
+                client.send(JSON.stringify({
+                    "ContentType": "ImNewPlayer"
                 }))
             }
         }
@@ -116,18 +122,66 @@ const App = () => {
                     "message": data.message,
                     "time": "geytime"
                 }))
+            } else if(data.ContentType === "newName"){
+                setNickname(data.NewName)
+                console.log(nickname)
+            } else if(data.ContentType === "checkboxChange"){
+                setChecked(!checked)
+            } else if(data.ContentType === "updateAttributes"){
+                setChecked(data.reverse)
+                setSelectSpeed(Number(data.speed))
+                setSelectRounds(Number(data.rounds))
+            } else if(data.ContentType === "selectRoundsChange"){
+                setSelectRounds(data.rounds)
+            } else if(data.ContentType === "speedChange"){
+                setSelectSpeed(data.speed)
             }
         }
         client.onclose = () => {
             sessionStorage.clear()
         }
     })
+    const handleCheckboxChange = () => {
+        if(sessionStorage.getItem("Leader") === "true"){
+            client.send(JSON.stringify({
+                "ContentType": "checkboxChange",
+                "checkbox": !checked
+            }))
+        }
+    }
+    const handleSelectChange = (e) => {
+        if(sessionStorage.getItem("Leader") === "true"){
+            client.send(JSON.stringify({
+                "ContentType": "selectRoundsChange",
+                "rounds": e.target.value
+            }))
+        }
+    }
+    const handleSpeedChange = (e) => {
+        if(sessionStorage.getItem("Leader") === "true"){
+            client.send(JSON.stringify({
+                "ContentType": "speedChange",
+                "speed": e.target.value
+            }))
+        }
+    }
     return (
         <div className={"body"}>
             <div className={"body-container"}>
                 <div className={"main-container"}>
-                    <Chat messages={messages} handleMessageChange={onMessageChange} inputValue={newMessage} onChatSubmit={onChatSubmit}/>
-                    <Setting/>
+                    <Chat messages={messages}
+                          handleMessageChange={onMessageChange}
+                          inputValue={newMessage}
+                          onChatSubmit={onChatSubmit}
+                    />
+                    <Setting checked={checked}
+                             client={client}
+                             handleCheckboxChange={handleCheckboxChange}
+                             selectSpeed={selectSpeed}
+                             selectRounds={selectRounds}
+                             handleSelectChange={handleSelectChange}
+                             handleSpeedChange={handleSpeedChange}
+                    />
                     <Players playerList={playerList}/>
                 </div>
             </div>
