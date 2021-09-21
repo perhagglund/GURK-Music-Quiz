@@ -108,8 +108,8 @@ const Form = (props) => {
                              changeColorPlus={changeColorPlus}
             />
             <div className={"button-container"}>
-                <Button classname={"joinbutton"} name={"Join Game"} onClick={onJoinGame}/>
-                <Button classname={"createbutton"} name={"Create Game"} onClick={() => console.log("Create Game")}/>
+                <Button classname={"joinbutton"} name={"Join Game"} onClick={onJoinGame} disabled={false}/>
+                <Button classname={"createbutton"} name={"Create Game"} onClick={() => console.log("Create Game")} disabled={true}/>
             </div>
         </div>
     )

@@ -67,6 +67,91 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                     "player": self.nickname
                 }
             )
+        elif contentType == "checkboxChange":
+            if self.leader:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "checkboxChange",
+                        "checkbox": self.text_data_json["checkbox"]
+                    }
+                )
+            await self.changeCheckbox(self.text_data_json["checkbox"])
+        elif contentType == "ImNewPlayer":
+            attributes = await self.getRoomAttributes()
+            await self.send(text_data=json.dumps({
+                "ContentType": "updateAttributes",
+                "reverse": attributes["reverse"],
+                "speed": str(attributes["speed"]),
+                "rounds": str(attributes["rounds"])
+            }))
+        elif contentType == "selectRoundsChange":
+            if self.leader:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "selectRoundsChange",
+                        "rounds": self.text_data_json["rounds"]
+                    }
+                )
+                await self.changeRounds(self.text_data_json["rounds"])
+        elif contentType == "speedChange":
+            if self.leader:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "speedChange",
+                        "speed": self.text_data_json["speed"]
+                    }
+                )
+                await self.changeSpeed(self.text_data_json["speed"])
+
+    async def speedChange(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "speedChange",
+            "speed": event["speed"]
+        }))
+
+    @database_sync_to_async
+    def changeSpeed(self, speed):
+        room = Rooms.objects.get(room_id=self.room_name)
+        room.speed = speed
+        room.save()
+        print(speed)
+
+    async def selectRoundsChange(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "selectRoundsChange",
+            "rounds": event["rounds"]
+        }))
+
+    @database_sync_to_async
+    def changeRounds(self, rounds):
+        room = Rooms.objects.get(room_id=self.room_name)
+        room.rounds = rounds
+        room.save()
+        print(rounds)
+
+    @database_sync_to_async
+    def getRoomAttributes(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        return {
+            "reverse": room.reverse,
+            "speed": room.speed,
+            "rounds": room.rounds
+        }
+
+    @database_sync_to_async
+    def changeCheckbox(self, reverse):
+        room = Rooms.objects.get(room_id=self.room_name)
+        room.reverse = reverse
+        room.save()
+        print(reverse)
+
+    async def checkboxChange(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "checkboxChange"
+        }))
 
     async def chatMessage(self, event):
         print(event["player"], "has sent message", event["message"])
@@ -172,7 +257,7 @@ class lobbyConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def createNewRoom(self):
-        return Rooms(room_id=self.room_name)
+        return Rooms(room_id=self.room_name, rounds=5, reverse=True, speed=1)
 
     @database_sync_to_async
     def save(self, entity):

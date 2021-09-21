@@ -1,15 +1,10 @@
 import React, { useState } from 'react'
 
 const Rounds = (props) => {
-
-    const handleSelectChange = (e) => {
-        props.setSelectRounds(e.target.value)
-    }
-
     return (
         <div className={"rounds-container"}>
             <label htmlFor="rounds">Number of rounds: </label>
-            <select onChange={handleSelectChange} className={"rounds"} id={"rounds"} value={props.selectRounds}>
+            <select onChange={props.handleSelectChange} className={"rounds"} id={"rounds"} value={props.selectRounds} disabled={sessionStorage.getItem("Leader") !== "true"}>
                 <option value={1}>1</option>
                 <option value={2}>2</option>
                 <option value={3}>3</option>
