@@ -7,8 +7,6 @@ const getEveryRoomName = () => {
 }
 
 export const doesRoomExist = (room_name) => {
-    console.log(room_name)
-    console.log(baseURLApi + "/doesRoomExist/" + room_name)
     return axios.get(`${baseURLApi}/doesRoomExist/${room_name}`)
 }
 

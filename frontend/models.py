@@ -7,6 +7,7 @@ class Rooms(models.Model):
     reverse = models.BooleanField()
     speed = models.DecimalField(max_digits=4, decimal_places=2)
     rounds = models.IntegerField()
+    state = models.CharField(max_length=10)
 
     def __str__(self):
         return self.room_id
@@ -19,3 +20,4 @@ class Users(models.Model):
     eyes = models.IntegerField()
     mouth = models.IntegerField()
     leader = models.BooleanField()
+    uniqueID = models.CharField(max_length=16)

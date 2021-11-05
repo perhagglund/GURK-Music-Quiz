@@ -49,6 +49,7 @@ const App = () => {
             "message": newMessage,
             "sender": nickname
         }))
+        setNewMessage("")
     }
     useEffect(() => {
         client.onopen = () => {
@@ -165,6 +166,14 @@ const App = () => {
             }))
         }
     }
+    const handleStartGame = () => {
+        if (sessionStorage.getItem("Leader") === "true"){
+            client.send(JSON.stringify({
+                "ContentType": "startGame"
+            }))
+        }
+    }
+
     return (
         <div className={"body"}>
             <div className={"body-container"}>
@@ -181,6 +190,7 @@ const App = () => {
                              selectRounds={selectRounds}
                              handleSelectChange={handleSelectChange}
                              handleSpeedChange={handleSpeedChange}
+                             handleStartGame={handleStartGame}
                     />
                     <Players playerList={playerList}/>
                 </div>

@@ -16,7 +16,7 @@ const Settings = (props) => {
                 <Reverse checked={props.checked} handleChange={props.handleCheckboxChange} />
                 <Invitelink />
             </div>
-            <Button classname={"startbutton"} name={"Start Game"} onClick={() => console.log("Start Game")} disabled={sessionStorage.getItem("Leader") !== "true"}/>
+            <Button classname={"startbutton"} name={"Start Game"} onClick={props.handleStartGame} disabled={sessionStorage.getItem("Leader") !== "true"}/>
         </div>
     )
 }
