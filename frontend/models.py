@@ -21,3 +21,4 @@ class Users(models.Model):
     mouth = models.IntegerField()
     leader = models.BooleanField()
     uniqueID = models.CharField(max_length=16)
+    online = models.BooleanField()

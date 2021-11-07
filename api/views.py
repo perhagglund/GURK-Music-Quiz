@@ -23,3 +23,7 @@ def updateRoomPlayers(request, room_name):
     data = Users.objects.all().filter(room_id=room_name).values()
     response = {"data": list(data)}
     return JsonResponse(response)
+
+def isRoomInGame(request, room_name):
+    room = Rooms.objects.get(room_id=room_name)
+    return JsonResponse({"inGame": room.state == "game"})

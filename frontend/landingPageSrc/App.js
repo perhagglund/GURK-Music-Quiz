@@ -5,6 +5,7 @@ import {useLocation} from "react-router-dom";
 
 
 const App = () => {
+    sessionStorage.clear()
     document.title = "Musikquiz"
 
     const [showCookieBanner, setShowCookieBanner] = useState('none')

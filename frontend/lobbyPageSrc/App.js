@@ -40,16 +40,23 @@ const App = () => {
     const [selectRounds, setSelectRounds] = useState(5)
     const onMessageChange = (event) => {
         setNewMessage(event.target.value)
-        console.log(newMessage)
     }
-    const onChatSubmit = (event) => {
-        event.preventDefault()
-        client.send(JSON.stringify({
-            "ContentType": "chatMessage",
-            "message": newMessage,
-            "sender": nickname
-        }))
-        setNewMessage("")
+
+    const handleEnterPress = (event) => {
+        if(event.key === "Enter" || event.key === "NumpadEnter"){
+            sendMessage()
+        }
+    }
+
+    const sendMessage = () => {
+            if(newMessage.length > 0){
+                client.send(JSON.stringify({
+                    "ContentType": "chatMessage",
+                    "message": newMessage,
+                    "sender": nickname
+                }))
+            setNewMessage("")
+        }
     }
     useEffect(() => {
         client.onopen = () => {
@@ -136,6 +143,10 @@ const App = () => {
                 setSelectRounds(data.rounds)
             } else if(data.ContentType === "speedChange"){
                 setSelectSpeed(data.speed)
+            } else if(data.ContentType === "startGameUser"){
+                sessionStorage.setItem("uniqueID", data.id)
+                console.log(data.id, sessionStorage.getItem("uniqueID"), "startGameUser")
+                window.location.pathname = roomName + "/game"
             }
         }
         client.onclose = () => {
@@ -160,6 +171,7 @@ const App = () => {
     }
     const handleSpeedChange = (e) => {
         if(sessionStorage.getItem("Leader") === "true"){
+            console.log(newMessage)
             client.send(JSON.stringify({
                 "ContentType": "speedChange",
                 "speed": e.target.value
@@ -178,10 +190,10 @@ const App = () => {
         <div className={"body"}>
             <div className={"body-container"}>
                 <div className={"main-container"}>
-                    <Chat messages={messages}
-                          handleMessageChange={onMessageChange}
-                          inputValue={newMessage}
-                          onChatSubmit={onChatSubmit}
+                    <Chat   messages={messages}
+                            handleMessageChange={onMessageChange}
+                            inputValue={newMessage}
+                            handleEnterPress={handleEnterPress}
                     />
                     <Setting checked={checked}
                              client={client}

@@ -7,7 +7,7 @@ const Chat = (props) => {
     return (
         <div className={"chat-container"}>
             <ChatField messages={props.messages}/>
-            <ChatInput handleChange={props.handleMessageChange} value={props.inputValue} onSubmit={props.onChatSubmit}/>
+            <ChatInput handleChange={props.handleMessageChange} value={props.inputValue} handleEnterPress={props.handleEnterPress}/>
         </div>
     )
 }
