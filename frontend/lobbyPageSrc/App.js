@@ -190,6 +190,7 @@ const App = () => {
         <div className={"body"}>
             <div className={"body-container"}>
                 <div className={"main-container"}>
+<<<<<<< Updated upstream
                     <Chat   messages={messages}
                             handleMessageChange={onMessageChange}
                             inputValue={newMessage}
@@ -205,6 +206,13 @@ const App = () => {
                              handleStartGame={handleStartGame}
                     />
                     <Players playerList={playerList}/>
+=======
+                    <Setting/>
+                        <div className={"side-container"}>
+                            <Players playerList={playerList}/>
+                            <Chat messages={messages} handleMessageChange={onMessageChange} inputValue={newMessage} onChatSubmit={onChatSubmit}/>
+                        </div>
+>>>>>>> Stashed changes
                 </div>
             </div>
             <div className={"notcookie-container"} style={cookieBannerStyle}>

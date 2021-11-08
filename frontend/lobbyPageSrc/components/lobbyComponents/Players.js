@@ -10,7 +10,7 @@ const Players = (props) => {
         </div>)
     }
     return (
-        <div className={"players-container"}>
+        <div className={"halfTemplateContainer players-container"}>
             <h2 className={"playerheader"}>Players</h2>
             <div className={"playercharacters"}>
                 {props.playerList.map(player =>

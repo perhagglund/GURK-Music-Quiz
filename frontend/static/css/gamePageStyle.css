@@ -1,0 +1,10 @@
+.inlineColor-red {
+    color: coral;
+}
+.songInputField {
+    color: black;
+}
+.chooseSongsHeader {
+    font-family: Poppins, sans-serif;
+    font-size: 2.3rem;
+}

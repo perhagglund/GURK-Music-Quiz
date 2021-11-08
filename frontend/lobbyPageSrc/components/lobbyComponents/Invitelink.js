@@ -12,7 +12,7 @@ const Invitelink = () => {
 
     return (
         <div className={"invitelink"}>
-            <p>Invitation link: <br/> <span className={"link"}
+            <p>Invitation link: <br/> <span className={"link inlineColor-red"}
                onClick={copyLink}>
                {inviteLink}</span></p>
             <div className={"copyconfirmation"}>

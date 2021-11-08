@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap');
+
+.settings-container {
+    margin: 0 2%;
+}
+.roundsheader {
+    font-family: Poppins, sans-serif;
+    font-size: 2.3rem;
+    border: 3px solid black;
+    border-radius: 3px;
+    padding: 1vh 1.5vw;
+}
+.main-settings, .speed, .rounds {
+    display: block;
+    font-size: 1.3rem;
+    font-family: "Open Sans", sans-serif;
+}
+.main-settings {
+    width: 65%;
+}
+.speed, .rounds {
+    border: 2px solid black;
+    padding: 4px;
+    border-radius: 3px;
+    background-color: rgb(250, 243, 243);
+    float: right;
+}
+.reverse {
+    visibility: hidden;
+}
+.checkbox {
+    height: 1.6em;
+    border: 3px solid black;
+    border-radius: 4px;
+    width: 1.6em;
+    float: right;
+    margin-left: 1.5em;
+    margin-top: -1vh;
+}
+.checkbox-true {
+    background-image: url("../images/check.png");
+    background-size: cover;
+}
+.checkbox-false {
+    background-image: url("../images/check1.png");
+}
+.speed-container, .reverse-container, .rounds-container {
+    margin: 20% 0;
+}
+.invitelink {
+    text-align: center;
+    font-size: 1rem;
+    padding: 2% 0;
+}
+.link {
+    cursor: pointer;
+}
+.link:hover {
+    color: #2fbb2f;
+}
+.copyconfirmation {
+    color: #2fbb2f;
+}
+.char {
+    position: absolute;
+}
+.playerNickname {
+    position: relative;
+}

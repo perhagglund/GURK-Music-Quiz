@@ -1,0 +1,76 @@
+.namefield {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.namefield > input[type="text"] {
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 0.4em 1.4em;
+    width: 21em;
+    min-width: 325px;
+    font-size: 1.2rem;
+    font-family: "Open Sans", sans-serif;
+    text-align: center;
+    box-shadow: 5px 2px 2px lightgray;
+    z-index: 2;
+}
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 1px;
+}
+.selectcharacter {
+    display: flex;
+    justify-content: space-between;
+    width: 20vw;
+    min-width: 300px;
+    max-width: 400px;
+    height: 23vh;
+    min-height: 180px;
+    max-height: 275px;
+    background-image: url("../images/characterbackground.jpg");
+    background-size: cover;
+    background-position: left;
+    border-radius: 1px;
+}
+.arrowbutton-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin: 2vh 30px;
+}
+.arrowbutton {
+    height: 3vh;
+    cursor: pointer;
+}
+.arrowbutton:active {
+    transform: translateY(1px);
+}
+.top-character-position {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: -11vh;
+}
+.selectcharacter > .top-character-position {
+    margin-top: -11vh;
+}
+.character-container {
+    position: relative;
+}
+.basecharacter {
+    border-radius: 50%;
+    box-shadow: 2px 1px 1px lightgray;
+}
+.char {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 11vh;
+}
+.logo{
+    width: 380px;
+    margin-bottom: 25px;
+}
