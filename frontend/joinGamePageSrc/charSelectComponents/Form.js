@@ -36,7 +36,7 @@ const Form = (props) => {
 
     const onJoinGame = () => {
         if (nickname.length === 0){
-            setErrorMessage("Please write in a username")
+            setErrorMessage("Please write a username")
         } else {
             localStorage.setItem("Name", nickname.toString())
             sessionStorage.setItem("Name", nickname.toString())
@@ -95,7 +95,7 @@ const Form = (props) => {
         }
     }
     return (
-        <div className={"form"}>
+        <div className={"templateContainer"}>
             <NameField onChange={onNickChange} value={nickname} error={errorMessage}/>
             <SelectCharacter changeEyesMinus={changeEyesMinus}
                              changeMouthMinus={changeMouthMinus}

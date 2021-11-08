@@ -123,7 +123,7 @@ const Form = () => {
         }
     }
     return (
-        <div className={"form"}>
+        <div className={"templateContainer"}>
             <NameField onChange={onNickChange} value={nickname} error={errorMessage}/>
             <SelectCharacter changeEyesMinus={changeEyesMinus}
                              changeMouthMinus={changeMouthMinus}

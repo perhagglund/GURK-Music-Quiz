@@ -4,7 +4,7 @@ import { gameclient } from "../lobbyPageSrc/services/gameWebSocketConnect";
 const App = () => {
     const session = sessionStorage.getItem("uniqueID")
     const [gameState, setGameState] = useState("Not Online")
-    useEffect(() => {        
+    useEffect(() => {
         gameclient.onopen = () => {
             gameclient.send(JSON.stringify({
                 "ContentType": "checkID",
@@ -25,7 +25,7 @@ const App = () => {
             window.location.href = "/"
         }
     }
-    
+
     return (
         <div>
             {session}

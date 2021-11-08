@@ -1,0 +1,199 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgba(74, 222, 214, 0.94);
+    background-image: url("../images/nutNote4.png");
+}
+.body-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.main-container {
+    display: flex;
+    justify-content: center;
+}
+.side-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between
+}
+.templateContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 8px;
+    min-height: 650px;
+    max-height: 800px;
+    height: 92vh;
+    width: 28vw;
+    min-width: 620px;
+    max-width: 650px;
+    background-color: rgb(250, 243, 243);
+    padding: 3em 0;
+    box-shadow: 6px 4px 4px lightgray;
+}
+.halfTemplateContainer {
+    align-items: center;
+    border-radius: 8px;
+    min-height: 325px;
+    max-height: 392px;
+    height: 45.5vh;
+    width: 20vw;
+    min-width: 310px;
+    max-width: 325px;
+    background-color: rgb(250, 243, 243);
+    padding: 3em 0;
+    box-shadow: 6px 4px 4px lightgray;
+    border: 2px solid rgb(253, 245, 249);
+}
+
+/* ------------------------
+          BUTTONS
+ ------------------------ */
+.joinbutton, .startbutton {
+    padding: 0.5em 5em;
+    border-radius: 8px;
+    font-family: Poppins, sans-serif;
+    font-size: 1.8rem;
+    color: azure;
+    background-color: #2fbb2f;
+    margin-bottom: 0.8vh;
+    border: none;
+    cursor: pointer;
+    box-shadow: 6px 4px 2px lightgray;
+}
+.joinbutton:hover, .startbutton:hover {
+    background-color: green;
+    color: beige;
+}
+.joinbutton:active, .createbutton:active, .startbutton:active, .cookiebutton:active  {
+    transform: translateY(1px);
+}
+.createbutton {
+    border-radius: 8px;
+    font-family: Poppins, sans-serif;
+    font-size: 1rem;
+    color: azure;
+    padding: 0.6em 5em;
+    background-color: coral;
+    border: none;
+    cursor: pointer;
+    box-shadow: 6px 4px 4px lightgray;
+}
+.createbutton:hover {
+    background-color: #ba5d34;
+    color: beige;
+}
+
+/* ------------------------
+        COOKIE-BANNER
+ ------------------------ */
+.cookiebutton {
+    padding: 0.7em 4em;
+    margin-left: 1.2em;
+    border-radius: 5px;
+    font-family: Poppins, sans-serif;
+    font-size: 1rem;
+    color: azure;
+    background-color: rgba(24, 24, 24, 0.85);
+    cursor: pointer;
+    border: none;
+    box-shadow: 2px 1px 1px lightgray;
+}
+.notcookie-container {
+    position: absolute;
+    bottom: 18px;
+    display: flex;
+    justify-content: center;
+}
+.notcookiebanner {
+    padding: 0.7em 2em 0.7em 2.6em;
+    background-color: rgba(248, 248, 248, 0.96);
+    display: flex;
+    align-items: center;
+    box-shadow: none;
+    border-radius: 4px;
+}
+.notcookiebanner > h3 {
+    font-family: "Courier New", sans-serif;
+    font-size: 15px;
+}
+
+/* -------------------
+        PLAYERS
+ ------------------- */
+.players-container {
+    margin-left: 1.1vh;
+    display: block;
+}
+.playerheader {
+    font-family: Poppins, sans-serif;
+    font-size: 2.5vh;
+    text-align: center;
+    padding: 1vh 0;
+}
+.playercharacters {
+    display: grid;
+    grid-template-rows: 10em 2.5em;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin: 2em 10% 2em 10%;
+}
+
+/* -------------------
+         CHAT
+ ------------------- */
+.joinMessage {
+    color: forestgreen;
+}
+.leaveMessage {
+    color: red;
+}
+.chatfield {
+    transform: rotate(180deg);
+    direction: ltr;
+}
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-left: 1.1vh;
+    margin-top: 1.1vh;
+    font-family: "Open Sans", sans-serif;
+    font-size: 0.8rem;
+    padding: 12% 10%;
+    overflow: hidden;
+}
+.inner-chat-container {
+    width: 95%;
+    overflow: auto;
+    transform: rotate(180deg);
+    direction: rtl;
+}
+.chat-input {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    padding-top: 0.7rem;
+}
+.chat-input-field {
+    height: 2rem;
+    padding: 0 0.5rem;
+    width: 100%;
+    border: 2px solid darkgrey;
+    border-radius: 5px;
+    font-size: 0.8rem;
