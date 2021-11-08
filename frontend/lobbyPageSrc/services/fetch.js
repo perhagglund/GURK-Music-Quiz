@@ -7,8 +7,6 @@ const getEveryRoomName = () => {
 }
 
 export const doesRoomExist = (room_name) => {
-    console.log(room_name)
-    console.log(baseURLApi + "/doesRoomExist/" + room_name)
     return axios.get(`${baseURLApi}/doesRoomExist/${room_name}`)
 }
 
@@ -16,4 +14,8 @@ export const updateRoomPlayers = (room_name) => {
     return axios.get(`${baseURLApi}/updateRoomPlayers/${room_name}`)
 }
 
-export default  { getEveryRoomName, doesRoomExist, updateRoomPlayers }
+export const isRoomInGame = (room_name) => {
+    return axios.get(`${baseURLApi}/isRoomInGame/${room_name}`)
+}
+
+export default  { getEveryRoomName, doesRoomExist, updateRoomPlayers, isRoomInGame }

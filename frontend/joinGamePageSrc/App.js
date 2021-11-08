@@ -1,17 +1,34 @@
 import React, {useEffect, useState} from "react";
 import Form from "./charSelectComponents/Form";
 import CookieBanner from "./charSelectComponents/CookieBanner";
+import {doesRoomExist, isRoomInGame} from "../lobbyPageSrc/services/fetch";
 
 
 const App = () => {
-    document.title = "Musikquiz"
     const roomName = window.location.pathname.split("/")[1]
+    document.title = "Musikquiz"
     const [showCookieBanner, setShowCookieBanner] = useState('none')
     useEffect(() => {
         if(!localStorage.getItem("cookieAccepted")){
             setShowCookieBanner("")
         }
-    }, [])
+        doesRoomExist(roomName)
+            .then(r => {
+                console.log(r.data)
+                if(!r.data.exists){
+                    console.log("Goodbye")
+                    window.location.pathname = ""
+                    }
+            })
+        isRoomInGame(roomName)
+            .then(r => {
+                console.log("Data: ", r.data)
+                if(r.data.inGame){
+                    console.log("Goodbye")
+                    window.location.pathname = ""
+                }
+            })
+        }, [])
     const changeVisibility = () => {
         setShowCookieBanner('none')
         localStorage.setItem("cookieAccepted", "true")
@@ -19,7 +36,6 @@ const App = () => {
     const cookieBannerStyle = {
         "display": showCookieBanner
     }
-
     return (
         <div className={"body"}>
             <div className={"body-container"}>
