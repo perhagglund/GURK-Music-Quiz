@@ -3,7 +3,6 @@ import NameField from "./NameField"
 import Button from "./Button";
 import SelectCharacter from "./SelectCharacter";
 import fetch from "../../lobbyPageSrc/services/fetch";
-import {useHistory, useLocation} from "react-router-dom";
 
 const Form = () => {
     const [nickname, setNickname] = useState("")

@@ -34,12 +34,19 @@ class lobbyConsumer(AsyncWebsocketConsumer):
         self.text_data_json = json.loads(text_data)
         contentType = self.text_data_json["ContentType"]
         if contentType == "LeaderJoined":
+            print("Leader joined")
             self.leader = True
+            print(self.leader)
             roomName = await self.createNewRoom()
+            print("New Room Created 2")
             await self.save(roomName)
+            print("Saved Room")
             self.nickname = self.text_data_json["nickname"]
+            print(self.nickname)
             user = await self.createNewUser()
+            print("New User Created")
             await self.save(user)
+            print("Saved User")
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -48,6 +55,7 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                     "player": self.nickname
                 }
             )
+            print("Sent message to group")
         elif contentType == "PlayerJoined":
             self.nickname = self.text_data_json["nickname"]
             user = await self.createNewUser()
@@ -288,6 +296,7 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                          eyes=self.text_data_json["eyes"],
                          mouth=self.text_data_json["mouth"],
                          leader=True,
+                         uniqueID="",
                          online=False)
         else:
             userList = Users.objects.all().filter(room_id=self.room_name).values("nickname")
@@ -304,10 +313,12 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                      eyes=self.text_data_json["eyes"],
                      mouth=self.text_data_json["mouth"],
                      leader=False,
+                     uniqueID="",
                      online=False)
 
     @database_sync_to_async
     def createNewRoom(self):
+        print("New Room Created")
         return Rooms(room_id=self.room_name, rounds=5, reverse=True, speed=1, state="lobby")
 
     @database_sync_to_async

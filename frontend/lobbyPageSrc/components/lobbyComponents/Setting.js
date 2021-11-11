@@ -8,13 +8,8 @@ import Invitelink from "./Invitelink";
 
 const Settings = (props) => {
     return (
-<<<<<<< Updated upstream
-        <div className={"settings-container"}>
-            <h2 className={"roundsheader"}>Rounds: {props.selectRounds}</h2>
-=======
         <div className={"templateContainer"}>
-            <h2 className={"roundsheader"}>Rounds: {selectRounds}</h2>
->>>>>>> Stashed changes
+            <h2 className={"roundsheader"}>Rounds: {props.selectRounds}</h2>
             <div className={"main-settings"}>
                 <Rounds selectRounds={props.selectRounds} handleSelectChange={props.handleSelectChange}/>
                 <Speed selectSpeed={props.selectSpeed} handleSpeedChange={props.handleSpeedChange}/>

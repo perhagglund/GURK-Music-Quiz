@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import { gameclient } from "../lobbyPageSrc/services/gameWebSocketConnect";
+import { gameclient } from "./services/gameWebSocketConnect"
 
 const App = () => {
     const session = sessionStorage.getItem("uniqueID")
