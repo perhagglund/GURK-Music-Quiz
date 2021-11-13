@@ -377,7 +377,7 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def checkID(self):
-        idExists = Users.objects.filter(room_id=self.room_name, uniqueID=self.text_data_json["id"]).exists()
+        idExists = True #Users.objects.filter(room_id=self.room_name, uniqueID=self.text_data_json["id"]).exists()
         playerInfo = Users.objects.filter(room_id=self.room_name, uniqueID=self.text_data_json["id"]).values()
         return {
             "idExists": idExists,

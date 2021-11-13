@@ -137,7 +137,6 @@ const Form = () => {
             <div className={"button-container"}>
                 <Button classname={"joinbutton"} name={"Join Game"} onClick={() => {console.log("per bög")}} disabled={true}/>
                 <Button classname={"createbutton"} name={"Create Game"} onClick={onCreateClick} disabled={false}/>
-                <Button classname={"joinbutton"} name={"LEAD BACK END DEVELOPER: ADAM BEIJAR"} onClick={() => {console.log("per bög")}} disabled={false}/>
             </div>
         </div>
     )
