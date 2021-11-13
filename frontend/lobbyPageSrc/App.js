@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from "react";
-import Setting from "./components/lobbyComponents/Setting";
 import Players from "./components/lobbyComponents/Players";
 import Chat from "./components/lobbyComponents/chat";
 import { client } from "./services/webSocketConnect";
 import fetch from "./services/fetch"
 import CookieBanner from "../landingPageSrc/components/CookieBanner";
+import Settings from "./components/lobbyComponents/Setting";
 
 
 const App = () => {
@@ -190,13 +190,7 @@ const App = () => {
         <div className={"body"}>
             <div className={"body-container"}>
                 <div className={"main-container"}>
-<<<<<<< Updated upstream
-                    <Chat   messages={messages}
-                            handleMessageChange={onMessageChange}
-                            inputValue={newMessage}
-                            handleEnterPress={handleEnterPress}
-                    />
-                    <Setting checked={checked}
+                    <Settings checked={checked}
                              client={client}
                              handleCheckboxChange={handleCheckboxChange}
                              selectSpeed={selectSpeed}
@@ -205,14 +199,10 @@ const App = () => {
                              handleSpeedChange={handleSpeedChange}
                              handleStartGame={handleStartGame}
                     />
-                    <Players playerList={playerList}/>
-=======
-                    <Setting/>
-                        <div className={"side-container"}>
-                            <Players playerList={playerList}/>
-                            <Chat messages={messages} handleMessageChange={onMessageChange} inputValue={newMessage} onChatSubmit={onChatSubmit}/>
-                        </div>
->>>>>>> Stashed changes
+                    <div className={"side-container"}>
+                        <Players playerList={playerList}/>
+                        <Chat messages={messages} handleMessageChange={onMessageChange} inputValue={newMessage} handleEnterPress={handleEnterPress}/>
+                    </div>
                 </div>
             </div>
             <div className={"notcookie-container"} style={cookieBannerStyle}>
