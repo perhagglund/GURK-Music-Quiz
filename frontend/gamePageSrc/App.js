@@ -7,6 +7,7 @@ const App = () => {
     const session = sessionStorage.getItem("uniqueID")
     const [gameState, setGameState] = useState("Not Online")
     const [showCookieBanner, setShowCookieBanner] = useState('none')
+    const [players, setPlayers] = useState([])
     useEffect(() => {
         if(!localStorage.getItem("cookieAccepted")){
             setShowCookieBanner("")
@@ -18,9 +19,6 @@ const App = () => {
                 "ContentType": "checkID",
                 "id": session
             }))
-            gameclient.send(JSON.stringify({
-                "ContentType": "getOnlineStatusGroup"
-            }))
         }
     }, [])
 
@@ -29,9 +27,15 @@ const App = () => {
         console.log(data)
         if (data.ContentType === "Accepted") {
             setGameState("Online")
+            console.log("set game state to online")
             console.log(session, gameState)
+            gameclient.send(JSON.stringify({
+                "ContentType": "getOnlineStatusGroup"
+            }))
         } else if (data.ContentType === "Denied") {
             window.location.href = "/"
+        } else if (data.ContentType === "updatePlayerStatus") {
+            setPlayers(data.userList)
         }
     }
     const changeVisibility = () => {
@@ -46,6 +50,7 @@ const App = () => {
             <div className={"body-container"}>
                 <div className={"main-container"}>
                     <SongSelector />
+                    {players.map((player) => <div>name: {player.nickname} online: {player.online} id: {player.uniqueID} {'\n'}</div>)}
                 </div> 
             </div>
             <div className={"notcookie-container"} style={cookieBannerStyle}>

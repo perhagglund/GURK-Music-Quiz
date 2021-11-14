@@ -1,4 +1,5 @@
 import json
+from os import stat
 import random
 
 from channels.db import database_sync_to_async
@@ -356,7 +357,7 @@ class gameConsumer(AsyncWebsocketConsumer):
             if IDCheck["idExists"]:
                 playerinfo = IDCheck["playerInfo"][0]
                 self.nickname = playerinfo["nickname"]
-                await self.updateOnline()
+                await self.updateOnline(True)
                 await self.send(text_data=json.dumps({
                     "ContentType": "Accepted",
                     "idExists": True,
@@ -367,12 +368,39 @@ class gameConsumer(AsyncWebsocketConsumer):
                     "ContentType": "Denied"
                 }))
         elif contentType == "getOnlineStatusGroup":
-            pass
-    
+            await self.sendOnlineStatus()
+        
+
+    async def updatePlayerStatus(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "updatePlayerStatus",
+            "userList": event["userList"]
+        }))
+
+    async def playerLeave(self):
+        await self.updateOnline(False)
+        await self.sendOnlineStatus()
+
+    async def sendOnlineStatus(self):
+        userList = await self.getOnlineStatusGroup()
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "updatePlayerStatus",
+                "userList": userList
+            }
+        )
     @database_sync_to_async
-    def updateOnline(self):
+    def getOnlineStatusGroup(self):
+        #get online status of all players in current room
+        userList = Users.objects.all().filter(room_id=self.room_name).values("nickname", "online", "uniqueID")
+        print(userList)
+        return list(userList)
+
+    @database_sync_to_async
+    def updateOnline(self, status):
         user = Users.objects.get(nickname=self.nickname, room_id=self.room_name)
-        user.online = True
+        user.online = status
         user.save()
 
     @database_sync_to_async
