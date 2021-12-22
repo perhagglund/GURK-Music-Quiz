@@ -1,10 +1,10 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 
-const SongInputField = () => {
+const SongInputField = (props) => {
 
     return (
         <div className={"songInputField"}>
-            <input type={"text"} placeholder={"placeholder-text"} onChange={() => console.log("hej")} value={"dsa"}/>
+            <input type={"text"} placeholder={"placeholder-text"} onChange={props.onNameChange} value={props.songName}/>
         </div>
     )
 }

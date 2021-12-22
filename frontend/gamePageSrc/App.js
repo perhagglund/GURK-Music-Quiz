@@ -4,10 +4,11 @@ import SongSelector from "./components/SongSelector"
 import CookieBanner from "../joinGamePageSrc/charSelectComponents/CookieBanner";
 
 const App = () => {
+    const [song, setSong] = useState([])
     const session = sessionStorage.getItem("uniqueID")
-    const [gameState, setGameState] = useState("Not Online")
     const [showCookieBanner, setShowCookieBanner] = useState('none')
     const [players, setPlayers] = useState([])
+    const [maxLength, setMaxLength] = useState(0)
     useEffect(() => {
         if(!localStorage.getItem("cookieAccepted")){
             setShowCookieBanner("")
@@ -21,21 +22,32 @@ const App = () => {
             }))
         }
     }, [])
-
+    const onSongClick = () => {
+        if (song.length < maxLength) {
+            setSong(song.concat({
+                id: Number(song.length + 1),
+                name: 'song ' + Number(song.length + 1),
+                artist: 'artist ' + Number(song.length + 1),
+                album: 'album ' + Number(song.length + 1),
+                duration: '3:00', 
+        }))
+        }
+    }
     gameclient.onmessage = (e) => {
         const data = JSON.parse(e.data)
-        console.log(data)
         if (data.ContentType === "Accepted") {
-            setGameState("Online")
-            console.log("set game state to online")
-            console.log(session, gameState)
             gameclient.send(JSON.stringify({
                 "ContentType": "getOnlineStatusGroup"
             }))
+            gameclient.send(JSON.stringify({
+                "ContentType": "getMaxLength"
+                }))
         } else if (data.ContentType === "Denied") {
             window.location.href = "/"
         } else if (data.ContentType === "updatePlayerStatus") {
             setPlayers(data.userList)
+        } else if (data.ContentType === "maxSongsLength") {
+            setMaxLength(data.maxLength)
         }
     }
     const changeVisibility = () => {
@@ -49,8 +61,8 @@ const App = () => {
         <div className={"body"}>
             <div className={"body-container"}>
                 <div className={"main-container"}>
-                    <SongSelector />
-                    {players.map((player) => <div>name: {player.nickname} online: {player.online} id: {player.uniqueID} {'\n'}</div>)}
+                    <SongSelector maxLength={maxLength} onSongClick={onSongClick} songs={song}/>
+                    {players.map((player) => <div>name: {player.nickname} online: {String(player.online)} id: {player.uniqueID}{"\n"}</div>)}
                 </div> 
             </div>
             <div className={"notcookie-container"} style={cookieBannerStyle}>
