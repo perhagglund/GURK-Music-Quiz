@@ -19,12 +19,12 @@
     margin: 1em 1.2em;
     
 }
-.orderedSong-container {
-    display: grid;
+.orderedSuggestedSong-container {
+    display: flex;
     justify-content: center;
+    align-items: center;
     border: 1px solid red;
 }
-.orderedSong {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+.orderedSuggestedSong {
+    border: 1px solid red;
 }

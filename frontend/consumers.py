@@ -1,10 +1,9 @@
 import json
 from os import stat
 import random
-
+from collections import Counter
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-
 import frontend.models
 from frontend.models import Rooms, Users
 
@@ -35,40 +34,37 @@ class lobbyConsumer(AsyncWebsocketConsumer):
         self.text_data_json = json.loads(text_data)
         contentType = self.text_data_json["ContentType"]
         if contentType == "LeaderJoined":
-            print("Leader joined")
-            self.leader = True
-            print(self.leader)
-            roomName = await self.createNewRoom()
-            print("New Room Created 2")
-            await self.save(roomName)
-            print("Saved Room")
-            self.nickname = self.text_data_json["nickname"]
-            print(self.nickname)
-            user = await self.createNewUser()
-            print("New User Created")
-            await self.save(user)
-            print("Saved User")
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "updatePlayers",
-                    "content": "playerJoined",
-                    "player": self.nickname
-                }
-            )
-            print("Sent message to group")
+            if not await self.roomAlreadyExists():
+                self.leader = True
+                roomName = await self.createNewRoom()
+                await self.save(roomName)
+                self.nickname = self.text_data_json["nickname"]
+                state = await self.getState()
+                user = await self.createNewUser(state)
+                if user:
+                    await self.save(user)
+                    await self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            "type": "updatePlayers",
+                            "content": "playerJoined",
+                            "player": self.nickname
+                        }
+                    )
         elif contentType == "PlayerJoined":
             self.nickname = self.text_data_json["nickname"]
-            user = await self.createNewUser()
-            await self.save(user)
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "updatePlayers",
-                    "content": "playerJoined",
-                    "player": self.nickname
-                }
-            )
+            state = await self.getState()
+            user = await self.createNewUser(state)
+            if user:
+                await self.save(user)
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "updatePlayers",
+                        "content": "playerJoined",
+                        "player": self.nickname
+                    }
+                )
         elif contentType == "chatMessage":
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -118,27 +114,42 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                 await self.changeSpeed(self.text_data_json["speed"])
         elif contentType == "startGame":
             if self.leader:
-                print("startGame")
                 await self.changeGameState()
-                print("Changed state")
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
                         "type": "startGame"
                     }
                 )
+        elif contentType == "checkID":
+            id = self.text_data_json["id"]
+            if await self.getState() == "game":
+                idExists = await self.checkID(id)
+                await self.send(text_data=json.dumps({
+                    "ContentType": "checkIDResponse",
+                    "id": id,
+                    "idExists": idExists,
+                    "gameState": True
+                }))
+            else:
+                await self.send(text_data=json.dumps({
+                    "ContentType": "checkIDResponse",
+                    "id": id,
+                    "gameState": False
+                }))
+
+    @database_sync_to_async
+    def checkID(self, id):
+        return frontend.models.Users.objects.filter(uniqueID=id, room_id=self.room_name).exists()
 
     @database_sync_to_async
     def changeGameState(self):
         room = Rooms.objects.get(room_id=self.room_name)
         room.state = "game"
         room.save()
-        print("Game Started", room.room_id, room.state)
 
     async def startGame(self, event):
-        print("Start game 2")
         id = await self.assignRandomID()
-        print("Assigned id")
         await self.send(text_data=json.dumps({
             "ContentType": "startGameUser",
             "id": str(id)
@@ -213,9 +224,7 @@ class lobbyConsumer(AsyncWebsocketConsumer):
 
     async def playerLeave(self):
         state = await self.getState()
-        print(state)
         if state == "lobby":
-            print(state, "Lobby Game")
             await self.deletePlayer()
             if self.leader:
                 await self.leaderLeftInRoom()
@@ -289,23 +298,33 @@ class lobbyConsumer(AsyncWebsocketConsumer):
         return list(userList)
 
     @database_sync_to_async
-    def createNewUser(self):
-        if self.leader:
-            return Users(room_id=self.room_name,
-                         nickname=self.text_data_json["nickname"],
-                         color=self.text_data_json["color"],
-                         eyes=self.text_data_json["eyes"],
-                         mouth=self.text_data_json["mouth"],
-                         leader=True,
-                         uniqueID="",
-                         online=False)
-        else:
-            userList = Users.objects.all().filter(room_id=self.room_name).values("nickname")
-            userListStr = " ".join([str(x["nickname"]) for x in userList])
-            if self.nickname in userListStr:
-                count = userListStr.count(self.nickname)
-                self.nickname += f"({count})"
-            return self.createNormalPlayer()
+    def createNewUser(self, state):
+        if state == "lobby":
+            if self.leader:
+                return Users(room_id=self.room_name,
+                             nickname=self.text_data_json["nickname"],
+                             color=self.text_data_json["color"],
+                             eyes=self.text_data_json["eyes"],
+                             mouth=self.text_data_json["mouth"],
+                             leader=True,
+                             uniqueID="",
+                             online=False)
+            else:
+                userList = list(Users.objects.all().filter(room_id=self.room_name).values("nickname"))
+                self.nickname = self.howManyUserWithSameName(userList, self.nickname, 0)
+                return self.createNormalPlayer()
+
+    def howManyUserWithSameName(self, userList, name, count):
+        checkName = name + f"({count})"
+        if count == 0:
+            checkName = name
+        if userList:
+            for i in userList:
+                if i["nickname"] == checkName:
+                    count += 1
+                    return self.howManyUserWithSameName(userList, name, count)
+            return checkName
+        return name
 
     def createNormalPlayer(self):
         return Users(room_id=self.room_name,
@@ -319,12 +338,17 @@ class lobbyConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def createNewRoom(self):
-        print("New Room Created")
         return Rooms(room_id=self.room_name, rounds=5, reverse=True, speed=1, state="lobby")
+
+    @database_sync_to_async
+    def roomAlreadyExists(self):
+        return Rooms.objects.filter(room_id=self.room_name).exists()
 
     @database_sync_to_async
     def save(self, entity):
         return entity.save()
+
+    
     
 
 class gameConsumer(AsyncWebsocketConsumer):
@@ -369,7 +393,16 @@ class gameConsumer(AsyncWebsocketConsumer):
                 }))
         elif contentType == "getOnlineStatusGroup":
             await self.sendOnlineStatus()
-        
+        elif contentType == "getMaxLength":
+            maxLength = await self.getMaxSongs()
+            await self.send(text_data=json.dumps({
+                "ContentType": "maxSongsLength",
+                "maxLength": maxLength,
+            }))
+
+    @database_sync_to_async
+    def getMaxSongs(self):
+        return list(Rooms.objects.all().filter(room_id=self.room_name).values("rounds"))[0]["rounds"]
 
     async def updatePlayerStatus(self, event):
         await self.send(text_data=json.dumps({
@@ -390,11 +423,11 @@ class gameConsumer(AsyncWebsocketConsumer):
                 "userList": userList
             }
         )
+
     @database_sync_to_async
     def getOnlineStatusGroup(self):
         #get online status of all players in current room
         userList = Users.objects.all().filter(room_id=self.room_name).values("nickname", "online", "uniqueID")
-        print(userList)
         return list(userList)
 
     @database_sync_to_async
@@ -405,7 +438,7 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def checkID(self):
-        idExists = True #Users.objects.filter(room_id=self.room_name, uniqueID=self.text_data_json["id"]).exists()
+        idExists = Users.objects.filter(room_id=self.room_name, uniqueID=self.text_data_json["id"]).exists()
         playerInfo = Users.objects.filter(room_id=self.room_name, uniqueID=self.text_data_json["id"]).values()
         return {
             "idExists": idExists,

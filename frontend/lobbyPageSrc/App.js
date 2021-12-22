@@ -25,9 +25,6 @@ const App = () => {
     }
 
     const roomName = window.location.pathname.split("/")[1]
-    if(!sessionStorage.getItem("Leader")){
-        window.location.pathname = roomName + "/joinGame"
-    }
     const [nickname, setNickname] = useState(sessionStorage.getItem("Name"))
     const eyes = sessionStorage.getItem("Eyes")
     const mouth = sessionStorage.getItem("Mouth")
@@ -60,6 +57,12 @@ const App = () => {
     }
     useEffect(() => {
         client.onopen = () => {
+            if(sessionStorage.getItem("uniqueID")){
+                client.send(JSON.stringify({
+                    "ContentType": "checkID",
+                    "id": sessionStorage.getItem("uniqueID")
+                }))
+            }
             if (sessionStorage.getItem("Leader") === "true") {
                 client.send(JSON.stringify({
                     "ContentType": "LeaderJoined",
@@ -80,6 +83,9 @@ const App = () => {
                     "ContentType": "ImNewPlayer"
                 }))
             }
+        }
+        if(!sessionStorage.getItem("Leader")){
+            window.location.pathname = roomName + "/joinGame"
         }
     }, [])
     useEffect(() => {
@@ -147,6 +153,17 @@ const App = () => {
                 sessionStorage.setItem("uniqueID", data.id)
                 console.log(data.id, sessionStorage.getItem("uniqueID"), "startGameUser")
                 window.location.pathname = roomName + "/game"
+            } else if(data.ContentType === "checkIDResponse"){
+                console.log("checkIDResponse", data.gameState)
+                if(data.gameState){
+                    if(data.idExists){
+                        sessionStorage.setItem("uniqueID", data.id)
+                        console.log(data.id, sessionStorage.getItem("uniqueID"), "checkIDResponse")
+                        window.location.pathname = roomName + "/game"
+                    }
+                } else {
+                    window.location.pathname = "/"
+                }
             }
         }
         client.onclose = () => {

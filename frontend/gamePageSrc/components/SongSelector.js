@@ -1,62 +1,48 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import SongInputField from "./SongInputField";
 import Button from "../../landingPageSrc/components/Button";
 import SelectedSongs from "./SelectedSongs";
+import SongSuggestions from "./SongSuggestions";
 
-
-const SongSelector = () => {
-
-    const [song, setSong] = useState([{
-        id: 1,
-        name: 'song1',
-        artist: 'artist1',
-        album: 'album1',
-        duration: '3:00',
-    },
-    {
-        id: 2,
-        name: 'song2',
-        artist: 'artist2',
-        album: 'album2',
-        duration: '3:00',
-    },
-    {
-        id: 3,
-        name: 'song3',
-        artist: 'artist3',
-        album: 'album3',
-        duration: '3:00',
-    },
-    {
-        id: 4,
-        name: 'song4',
-        artist: 'artist4',
-        album: 'album4',
-        duration: '3:00',
-    }])
-
-    const OnClick = () => {
-        if (song.length < 5) {
-            setSong(song.concat({
-                id: Number(song.length + 1),
-                name: 'song' + Number(song.length + 1),
-                artist: 'artist' + Number(song.length + 1),
-                album: 'album' + Number(song.length + 1),
-                duration: '3:00', 
-        }))
+const SongSelector = (props) => {
+    const [songSuggestions, setSongSuggestions] = useState([]);
+    const [songName, setSongName] = useState("");
+    const getSongSuggestions = () => {
+        if(songName.length > 0){
+            const url = "http://"+window.location.host+"/api/searchSong/"+songName;
+            const fetchSongSuggestions = async () => {
+                const result = await fetch(url);
+                const data = await result.json();
+                if(data.statusCode === 200){
+                    setSongSuggestions(data.result);
+                } else {
+                    setSongSuggestions([]);
+                }
+            }
+            fetchSongSuggestions();
+        } else {
+            setSongSuggestions([]);
         }
     }
+    const onNameChange = (e) => {
+        setSongName(e.target.value);
+    }
+    useEffect(() => {
+        const timeoutId = setTimeout(() => getSongSuggestions(), 2000);
+        return () => clearTimeout(timeoutId);
+    }, [songName]);
     return (
         <div className={"templateContainer"}>
             <div className={"chooseSong-container"}>
                 <h1 className={"chooseSongsHeader"}>Choose your songs</h1>
-                <h2>Song <span className={"inlineColor-red"}>1</span> of 3</h2>
-                <SongInputField/>
-                <Button classname={"chooseSongButton"} onClick={OnClick} name={">>"}/>
+                <h2>Song <span className={"inlineColor-red"}>{props.songs.length}</span> of {props.maxLength}</h2>
+                    <SongInputField onNameChange={onNameChange} songName={songName}/>
+                    <Button classname={"chooseSongButton"} onClick={props.onSongClick} name={">>"}/>
+                    {songSuggestions.length > 0 && <SongSuggestions songs={songSuggestions}/>}
                 </div>
                 <div className={"selectedSongs-container"}>
                     <div className={"selectedSongs"}>
-                        <SelectedSongs songs={song}/>
+                        <SelectedSongs songs={props.songs}/>
                     </div>
             </div>
         </div>

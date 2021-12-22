@@ -5,5 +5,6 @@ urlpatterns = [
     path('getEveryRoomName/', views.getEveryRoomName),
     path('doesRoomExist/<str:room_name>/', views.doesRoomExist),
     path('updateRoomPlayers/<str:room_name>/', views.updateRoomPlayers),
-    path('isRoomInGame/<str:room_name>/', views.isRoomInGame)
+    path('isRoomInGame/<str:room_name>/', views.isRoomInGame),
+    path('searchSong/<str:query>/', views.searchSong),
 ]
