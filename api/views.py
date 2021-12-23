@@ -34,11 +34,11 @@ def searchSong(request, query):
     yt = YTMusic()
     result = yt.search(query, filter='songs', ignore_spelling=True, limit=5)
     resultList = ({
+        "id": x["videoId"],
         "title": x["title"], 
         "artist": ", ".join((x["name"] for x in x["artists"])),
         "album": x["album"]["name"],
         "duration": x["duration"],
-        "id": x["videoId"] 
         } for x in result)
     if result:
         return JsonResponse(
