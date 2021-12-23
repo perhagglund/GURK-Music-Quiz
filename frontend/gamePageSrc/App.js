@@ -4,7 +4,7 @@ import SongSelector from "./components/SongSelector"
 import CookieBanner from "../joinGamePageSrc/charSelectComponents/CookieBanner";
 
 const App = () => {
-    const [song, setSong] = useState([])
+    const [songs, setSong] = useState([])
     const session = sessionStorage.getItem("uniqueID")
     const [showCookieBanner, setShowCookieBanner] = useState('none')
     const [players, setPlayers] = useState([])
@@ -22,15 +22,21 @@ const App = () => {
             }))
         }
     }, [])
-    const onSongClick = () => {
-        if (song.length < maxLength) {
-            setSong(song.concat({
-                id: Number(song.length + 1),
-                name: 'song ' + Number(song.length + 1),
-                artist: 'artist ' + Number(song.length + 1),
-                album: 'album ' + Number(song.length + 1),
-                duration: '3:00', 
-        }))
+    const onSongClick = (song) => {
+        let exists = false
+        if (songs.length < maxLength) {
+            if(songs.some(e => e.id == song.id)){
+                exists = true
+            }
+            if(!exists){
+                setSong(songs.concat({
+                    id: song.id,
+                    name: song.title,
+                    artist: song.artist,
+                    album: song.album,
+                    duration: song.duration, 
+                }))
+            }
         }
     }
     gameclient.onmessage = (e) => {
@@ -61,8 +67,7 @@ const App = () => {
         <div className={"body"}>
             <div className={"body-container"}>
                 <div className={"main-container"}>
-                    <SongSelector maxLength={maxLength} onSongClick={onSongClick} songs={song}/>
-                    {players.map((player) => <div>name: {player.nickname} online: {String(player.online)} id: {player.uniqueID}{"\n"}</div>)}
+                    <SongSelector maxLength={maxLength} onSongClick={onSongClick} songs={songs}/>
                 </div> 
             </div>
             <div className={"notcookie-container"} style={cookieBannerStyle}>

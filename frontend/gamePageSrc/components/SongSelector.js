@@ -36,14 +36,13 @@ const SongSelector = (props) => {
             <div className={"chooseSong-container"}>
                 <h1 className={"chooseSongsHeader"}>Choose your songs</h1>
                 <h2>Song <span className={"inlineColor-red"}>{props.songs.length}</span> of {props.maxLength}</h2>
-                    <SongInputField onNameChange={onNameChange} songName={songName}/>
-                    <Button classname={"chooseSongButton"} onClick={props.onSongClick} name={">>"}/>
-                    {songSuggestions.length > 0 && <SongSuggestions songs={songSuggestions}/>}
+                <SongInputField onNameChange={onNameChange} songName={songName}/>
+                {songSuggestions.length > 0 && <SongSuggestions songs={songSuggestions} onSongClick={props.onSongClick}/>}
+            </div>
+            <div className={"selectedSongs-container"}>
+                <div className={"selectedSongs"}>
+                    <SelectedSongs songs={props.songs}/>
                 </div>
-                <div className={"selectedSongs-container"}>
-                    <div className={"selectedSongs"}>
-                        <SelectedSongs songs={props.songs}/>
-                    </div>
             </div>
         </div>
     )
