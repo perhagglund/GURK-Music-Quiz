@@ -91,85 +91,94 @@ const App = () => {
     useEffect(() => {
         client.onmessage = (e) => {
             const data = JSON.parse(e.data)
-            console.log("Hej")
-            if (data.ContentType === "NewLeader") {
-                sessionStorage.setItem("Leader", "true")
-                console.log("LeaderLeft")
-            } else if(data.ContentType === "updatePlayers"){
-                fetch.updateRoomPlayers(roomName).then(r => {
-                    let players = []
-                    r.data.data.forEach(player => {
-                        players = players.concat({
-                            "id": players.length,
-                            "nickname": player.nickname,
-                            "color": player.color,
-                            "mouth": player.mouth,
-                            "eyes": player.eyes,
-                            "leader": player.leader
+            switch(data.ContentType){
+                case "NewLeader":{
+                    sessionStorage.setItem("Leader", "true")
+                } break
+                case "updatePlayers": {
+                    fetch.updateRoomPlayers(roomName).then(r => {
+                        let players = []
+                        r.data.data.forEach(player => {
+                            players = players.concat({
+                                "id": players.length,
+                                "nickname": player.nickname,
+                                "color": player.color,
+                                "mouth": player.mouth,
+                                "eyes": player.eyes,
+                                "leader": player.leader,
+                                "chosenSongs": player.chosenSongs,
+                            })
                         })
-                    })
-                    setPlayerList(players)
-                    console.log(data.content)
-                    if(data.content === "playerJoined"){
-                        setMessages(messages.concat(
-                            {
-                                "type": "joinMessage",
+                        setPlayerList(players)
+                        if(data.content === "playerJoined"){
+                            setMessages(messages.concat(
+                                {
+                                    "type": "joinMessage",
+                                    "username": data.player,
+                                    "message": "Has joined the server",
+                                    "time": "HeteroTime"
+                                }
+                            ))
+                        } else if(data.content === "playerLeave") {
+                            setMessages(messages.concat({
+                                "type": "leaveMessage",
                                 "username": data.player,
-                                "message": "Has joined the server",
+                                "message": "Has left the server",
                                 "time": "HeteroTime"
-                            }
-                        ))
-                    } else if(data.content === "playerLeave") {
-                        setMessages(messages.concat({
-                            "type": "leaveMessage",
-                            "username": data.player,
-                            "message": "Has left the server",
-                            "time": "HeteroTime"
-                        }))
+                            }))
+                        }
+                    })
+                } break
+                case "chatMessage": {
+                    setMessages(messages.concat({
+                        "type": "chatMessage",
+                        "username": data.player,
+                        "message": data.message,
+                        "time": "geytime"
+                    }))
+                } break
+                case "newName":{
+                    setNickname(data.NewName)
+                } break
+                case "checkboxChange": {
+                    setChecked(checked => !checked)
+                } break
+                case "updateAttributes": {
+                    setChecked(data.reverse)
+                    setSelectSpeed(Number(data.speed))
+                    setSelectRounds(Number(data.rounds))
+                } break
+                case "selectRoundsChange": {
+                    setSelectRounds(data.rounds)
+                } break
+                case "speedChange": {
+                    setSelectSpeed(data.speed)
+                } break
+                case "startGameUser": {
+                    sessionStorage.setItem("uniqueID", data.id)
+                    window.location.pathname = roomName + "/game"
+                } break
+                case "checkIDResponse":{
+                    if(data.gameState){
+                        if(data.idExists){
+                            sessionStorage.setItem("uniqueID", data.id)
+                            window.location.pathname = roomName + "/game"
+                        }
+                    } else {
+                        window.location.pathname = "/"
                     }
-                    console.log(messages)
-                })
-            } else if(data.ContentType === "chatMessage"){
-                setMessages(messages.concat({
-                    "type": "chatMessage",
-                    "username": data.player,
-                    "message": data.message,
-                    "time": "geytime"
-                }))
-            } else if(data.ContentType === "newName"){
-                setNickname(data.NewName)
-                console.log(nickname)
-            } else if(data.ContentType === "checkboxChange"){
-                setChecked(!checked)
-            } else if(data.ContentType === "updateAttributes"){
-                setChecked(data.reverse)
-                setSelectSpeed(Number(data.speed))
-                setSelectRounds(Number(data.rounds))
-            } else if(data.ContentType === "selectRoundsChange"){
-                setSelectRounds(data.rounds)
-            } else if(data.ContentType === "speedChange"){
-                setSelectSpeed(data.speed)
-            } else if(data.ContentType === "startGameUser"){
-                sessionStorage.setItem("uniqueID", data.id)
-                console.log(data.id, sessionStorage.getItem("uniqueID"), "startGameUser")
-                window.location.pathname = roomName + "/game"
-            } else if(data.ContentType === "checkIDResponse"){
-                console.log("checkIDResponse", data.gameState)
-                if(data.gameState){
-                    if(data.idExists){
-                        sessionStorage.setItem("uniqueID", data.id)
-                        console.log(data.id, sessionStorage.getItem("uniqueID"), "checkIDResponse")
-                        window.location.pathname = roomName + "/game"
-                    }
-                } else {
-                    window.location.pathname = "/"
+                } break
+                default:
+                    console.error("Unknown message type")
+                    
                 }
-            }
+
         }
         client.onclose = () => {
             sessionStorage.clear()
         }
-    })
+    }, [])
+
     const handleCheckboxChange = () => {
         if(sessionStorage.getItem("Leader") === "true"){
             client.send(JSON.stringify({
@@ -188,7 +197,6 @@ const App = () => {
     }
     const handleSpeedChange = (e) => {
         if(sessionStorage.getItem("Leader") === "true"){
-            console.log(newMessage)
             client.send(JSON.stringify({
                 "ContentType": "speedChange",
                 "speed": e.target.value
@@ -228,6 +236,5 @@ const App = () => {
         </div>
     )
 }
-
 
 export default App

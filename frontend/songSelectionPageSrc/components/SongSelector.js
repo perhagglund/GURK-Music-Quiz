@@ -7,9 +7,23 @@ import SongSuggestions from "./SongSuggestions";
 const SongSelector = (props) => {
     const [songSuggestions, setSongSuggestions] = useState([]);
     const [songName, setSongName] = useState("");
+    const removeInvalidChars = (str) => {
+        const invalidCharacters = ["/", "\\", "?", "*", "?", "\"", "<", ">", "|", ".", ":", ";", "!", "@", "#", "$", "%", "&", "=", "+", ",", "(", ")", "[", "]", "{", "}", "^", "`", "~"]
+        let strList = str.split("")
+        for(let i = 0; i < strList.length; i++){
+            if(invalidCharacters.includes(strList[i])){
+                strList[i] = ""
+                console.log("Invalid character in song name", strList[i], strList)
+            }
+        }
+        return strList.join("")
+    }
     const getSongSuggestions = () => {
         if(songName.length > 0){
-            const url = "http://"+window.location.host+"/api/searchSong/"+songName;
+            console.log("before removing invalid characters", songName)
+            const validSongName = removeInvalidChars(songName)
+            console.log("after removing invalid characters", validSongName)
+            const url = "http://"+window.location.host+"/api/searchSong/"+validSongName;
             const fetchSongSuggestions = async () => {
                 const result = await fetch(url);
                 const data = await result.json();
@@ -28,7 +42,7 @@ const SongSelector = (props) => {
         setSongName(e.target.value);
     }
     useEffect(() => {
-        const timeoutId = setTimeout(() => getSongSuggestions(), 2000);
+        const timeoutId = setTimeout(() => getSongSuggestions(), 500);
         return () => clearTimeout(timeoutId);
     }, [songName]);
     return (
@@ -41,7 +55,7 @@ const SongSelector = (props) => {
             </div>
             <div className={"selectedSongs-container"}>
                 <div className={"selectedSongs"}>
-                    <SelectedSongs songs={props.songs}/>
+                    <SelectedSongs songs={props.songs} removeSong={props.removeSong}/>
                 </div>
             </div>
         </div>

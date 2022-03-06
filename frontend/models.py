@@ -7,14 +7,15 @@ class Rooms(models.Model):
     reverse = models.BooleanField()
     speed = models.DecimalField(max_digits=4, decimal_places=2)
     rounds = models.IntegerField()
-    state = models.CharField(max_length=10)
+    state = models.CharField(max_length=24, default='lobby')
 
     def __str__(self):
         return self.room_id
 
 
 class Users(models.Model):
-    room_id = models.CharField(max_length=16)
+    id = models.IntegerField(primary_key=True)
+    room = models.ForeignKey(Rooms, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=255)
     color = models.IntegerField()
     eyes = models.IntegerField()
@@ -22,3 +23,14 @@ class Users(models.Model):
     leader = models.BooleanField()
     uniqueID = models.CharField(max_length=16)
     online = models.BooleanField()
+    chosenSongs = models.IntegerField()
+    ready = models.BooleanField()
+
+class Songs(models.Model):
+    room_id = models.CharField(max_length=16)
+    song_id = models.CharField(max_length=16)
+    artist = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    album = models.CharField(max_length=255)
+    duration = models.IntegerField()
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
