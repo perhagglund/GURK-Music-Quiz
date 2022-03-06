@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:sqlite:C:\Users\a3bei\Desktop\Projects\GURK_Music_Quiz\db.sqlite3</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="SpotifyBotDB" uuid="7d62e96b-a32f-43a5-96fe-e15082ce93fa">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://192.168.1.214:3306/spotifybot</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

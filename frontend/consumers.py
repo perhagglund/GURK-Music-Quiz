@@ -1,12 +1,13 @@
+from enum import unique
 import json
-from os import stat
 import random
-from collections import Counter
-from channels.db import database_sync_to_async
+from turtle import down, up
+from channels.db import DatabaseSyncToAsync, database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 import frontend.models
-from frontend.models import Rooms, Users
-
+from frontend.models import Rooms, Users, Songs
+import youtube_dl
+import os
 
 class lobbyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -33,25 +34,25 @@ class lobbyConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         self.text_data_json = json.loads(text_data)
         contentType = self.text_data_json["ContentType"]
-        if contentType == "LeaderJoined":
-            if not await self.roomAlreadyExists():
-                self.leader = True
-                roomName = await self.createNewRoom()
-                await self.save(roomName)
-                self.nickname = self.text_data_json["nickname"]
-                state = await self.getState()
-                user = await self.createNewUser(state)
-                if user:
-                    await self.save(user)
-                    await self.channel_layer.group_send(
-                        self.room_group_name,
-                        {
-                            "type": "updatePlayers",
-                            "content": "playerJoined",
-                            "player": self.nickname
-                        }
-                    )
-        elif contentType == "PlayerJoined":
+        options = {
+            "LeaderJoined": self.leaderJoined,
+            "PlayerJoined": self.playerJoined,
+            "chatMessage": self.chatMessage,
+            "checkboxChange": self.checkboxChange,
+            "ImNewPlayer": self.ImNewPlayer,
+            "selectRoundsChange": self.selectRoundsChange,
+            "speedChange": self.speedChange,
+            "startGame": self.startGame,
+            "checkID": self.checkID
+        }
+        if contentType in options:
+            await options[contentType]()
+
+    async def leaderJoined(self):
+        if not await self.roomAlreadyExists():
+            self.leader = True
+            roomName = await self.createNewRoom()
+            await self.save(roomName)
             self.nickname = self.text_data_json["nickname"]
             state = await self.getState()
             user = await self.createNewUser(state)
@@ -65,102 +66,110 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                         "player": self.nickname
                     }
                 )
-        elif contentType == "chatMessage":
+
+    async def playerJoined(self):
+        self.nickname = self.text_data_json["nickname"]
+        state = await self.getState()
+        user = await self.createNewUser(state)
+        if user:
+            await self.save(user)
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    "type": "chatMessage",
-                    "message": self.text_data_json["message"],
+                    "type": "updatePlayers",
+                    "content": "playerJoined",
                     "player": self.nickname
                 }
             )
-        elif contentType == "checkboxChange":
-            if self.leader:
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        "type": "checkboxChange",
-                        "checkbox": self.text_data_json["checkbox"]
-                    }
-                )
+
+    async def chatMessage(self):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "chatMessageGroup",
+                "message": self.text_data_json["message"],
+                "player": self.nickname
+            }
+        )
+
+    async def checkboxChange(self):
+        if self.leader:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "checkboxChangeGroup",
+                    "checkbox": self.text_data_json["checkbox"]
+                }
+            )
             await self.changeCheckbox(self.text_data_json["checkbox"])
-        elif contentType == "ImNewPlayer":
-            attributes = await self.getRoomAttributes()
+
+    async def ImNewPlayer(self):
+        attributes = await self.getRoomAttributes()
+        await self.send(text_data=json.dumps({
+            "ContentType": "updateAttributes",
+            "reverse": attributes["reverse"],
+            "speed": str(attributes["speed"]),
+            "rounds": str(attributes["rounds"])
+        }))
+
+    async def selectRoundsChange(self):
+        if self.leader:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "selectRoundsChangeGroup",
+                    "rounds": self.text_data_json["rounds"]
+                }
+            )
+            await self.changeRounds(self.text_data_json["rounds"])
+
+    async def speedChange(self):
+        if self.leader:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "speedChangeGroup",
+                    "speed": self.text_data_json["speed"]
+                }
+            )
+            await self.changeSpeed(self.text_data_json["speed"])
+
+    async def startGame(self):
+        if self.leader:
+            await self.changeGameState()
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "startUserGame"
+                }
+            )
+
+    async def checkID(self):
+        id = self.text_data_json["id"]
+        gameState = await self.getState()
+        if gameState == "songSelection" or gameState == "game":
+            idExists = await self.checkIfValidID(id)
             await self.send(text_data=json.dumps({
-                "ContentType": "updateAttributes",
-                "reverse": attributes["reverse"],
-                "speed": str(attributes["speed"]),
-                "rounds": str(attributes["rounds"])
+                "ContentType": "checkIDResponse",
+                "id": id,
+                "idExists": idExists,
+                "gameState": True
             }))
-        elif contentType == "selectRoundsChange":
-            if self.leader:
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        "type": "selectRoundsChange",
-                        "rounds": self.text_data_json["rounds"]
-                    }
-                )
-                await self.changeRounds(self.text_data_json["rounds"])
-        elif contentType == "speedChange":
-            if self.leader:
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        "type": "speedChange",
-                        "speed": self.text_data_json["speed"]
-                    }
-                )
-                await self.changeSpeed(self.text_data_json["speed"])
-        elif contentType == "startGame":
-            if self.leader:
-                await self.changeGameState()
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        "type": "startGame"
-                    }
-                )
-        elif contentType == "checkID":
-            id = self.text_data_json["id"]
-            if await self.getState() == "game":
-                idExists = await self.checkID(id)
-                await self.send(text_data=json.dumps({
-                    "ContentType": "checkIDResponse",
-                    "id": id,
-                    "idExists": idExists,
-                    "gameState": True
-                }))
-            else:
-                await self.send(text_data=json.dumps({
-                    "ContentType": "checkIDResponse",
-                    "id": id,
-                    "gameState": False
-                }))
+        else:
+            await self.send(text_data=json.dumps({
+                "ContentType": "checkIDResponse",
+                "id": id,
+                "gameState": False
+            }))
 
-    @database_sync_to_async
-    def checkID(self, id):
-        return frontend.models.Users.objects.filter(uniqueID=id, room_id=self.room_name).exists()
+    # End of receive message from WebSocket
 
-    @database_sync_to_async
-    def changeGameState(self):
-        room = Rooms.objects.get(room_id=self.room_name)
-        room.state = "game"
-        room.save()
-
-    async def startGame(self, event):
+    async def startUserGame(self, event):
         id = await self.assignRandomID()
         await self.send(text_data=json.dumps({
             "ContentType": "startGameUser",
             "id": str(id)
         }))
-
-    @database_sync_to_async
-    def assignRandomID(self):
-        user = Users.objects.get(nickname=self.nickname, room_id=self.room_name)
-        user.uniqueID = self.makeRandomID(16)
-        user.save()
-        return user.uniqueID
 
     def makeRandomID(self, length):
         result = ""
@@ -171,23 +180,173 @@ class lobbyConsumer(AsyncWebsocketConsumer):
         return str(result)
         
 
-    async def speedChange(self, event):
+    async def speedChangeGroup(self, event):
         await self.send(text_data=json.dumps({
             "ContentType": "speedChange",
             "speed": event["speed"]
         }))
+
+    async def checkboxChangeGroup(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "checkboxChange"
+        }))
+
+    async def selectRoundsChangeGroup(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "selectRoundsChange",
+            "rounds": event["rounds"]
+    }))
+
+    async def chatMessageGroup(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "chatMessage",
+            "message": event["message"],
+            "player": event["player"]
+        }))
+
+    async def playerLeave(self):
+        state = await self.getState()
+        if state == "lobby":
+            await self.deletePlayer()
+            if self.leader:
+                await self.leaderLeftInRoom()
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "updatePlayers",
+                    "content": "playerLeave",
+                    "player": self.nickname
+                }
+            )
+
+    async def updatePlayers(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "updatePlayers",
+            "content": event["content"],
+            "player": event["player"]
+        }))
+
+    async def assignNewLeader(self):
+        user = await self.DBAssignNewLeader()
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "NewLeader",
+                "room_id": self.room_name,
+                "NewLeader": user.nickname
+            }
+        )
+
+    async def NewLeader(self, event):
+        if event["NewLeader"] == self.nickname:
+            self.leader = True
+            await self.send(text_data=json.dumps({
+                "ContentType": "NewLeader",
+                "room_id": event["room_id"],
+                "NewLeader": self.nickname
+            }))
+
+    def howManyUserWithSameName(self, userList, name, count):
+        checkName = name + f"({count})"
+        if count == 0:
+            checkName = name
+        if userList:
+            for i in userList:
+                if i["nickname"] == checkName:
+                    count += 1
+                    return self.howManyUserWithSameName(userList, name, count)
+            return checkName
+        return name
+
+    def createNormalPlayer(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        return Users(room=room,
+                     nickname=self.nickname,
+                     color=self.text_data_json["color"],
+                     eyes=self.text_data_json["eyes"],
+                     mouth=self.text_data_json["mouth"],
+                     leader=False,
+                     uniqueID="",
+                     online=False,
+                     chosenSongs = 0,
+                     ready = False)
+
+#   Database functions lobby client
+
+    @database_sync_to_async
+    def createNewRoom(self):
+        return Rooms(room_id=self.room_name, rounds=5, reverse=True, speed=1, state="lobby")
+
+    @database_sync_to_async
+    def roomAlreadyExists(self):
+        return Rooms.objects.filter(room_id=self.room_name).exists()
+
+    @database_sync_to_async
+    def save(self, entity):
+        return entity.save()
+
+    @database_sync_to_async
+    def DBAssignNewLeader(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.all().filter(room=room).first()
+        user.leader = True
+        user.save()
+        return user
+
+    async def leaderLeftInRoom(self):
+        userList = await self.assignUserList()
+        if len(userList) == 0:
+            await self.deleteRoom()
+        else:
+            await self.assignNewLeader()
+
+    @database_sync_to_async
+    def assignUserList(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        userList = Users.objects.all().filter(room=room).values("nickname")
+        return list(userList)
+
+    @database_sync_to_async
+    def createNewUser(self, state):
+        if state == "lobby":
+            if self.leader:
+                room = Rooms.objects.get(room_id=self.room_name)
+                return Users(room=room,
+                             nickname=self.text_data_json["nickname"],
+                             color=self.text_data_json["color"],
+                             eyes=self.text_data_json["eyes"],
+                             mouth=self.text_data_json["mouth"],
+                             leader=True,
+                             uniqueID="",
+                             online=False,
+                             chosenSongs= 0,
+                             ready=False)
+            else:
+                room = Rooms.objects.get(room_id=self.room_name)
+                userList = list(Users.objects.all().filter(room=room).values("nickname"))
+                self.nickname = self.howManyUserWithSameName(userList, self.nickname, 0)
+                return self.createNormalPlayer()
+
+    @database_sync_to_async
+    def deletePlayer(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(nickname=self.nickname, room=room)
+        user.delete()
+
+    @database_sync_to_async
+    def deleteRoom(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        room.delete()
+
+    @database_sync_to_async
+    def getState(self):
+        return Rooms.objects.get(room_id=self.room_name).state
 
     @database_sync_to_async
     def changeSpeed(self, speed):
         room = Rooms.objects.get(room_id=self.room_name)
         room.speed = speed
         room.save()
-
-    async def selectRoundsChange(self, event):
-        await self.send(text_data=json.dumps({
-            "ContentType": "selectRoundsChange",
-            "rounds": event["rounds"]
-        }))
 
     @database_sync_to_async
     def changeRounds(self, rounds):
@@ -210,146 +369,32 @@ class lobbyConsumer(AsyncWebsocketConsumer):
         room.reverse = reverse
         room.save()
 
-    async def checkboxChange(self, event):
-        await self.send(text_data=json.dumps({
-            "ContentType": "checkboxChange"
-        }))
-
-    async def chatMessage(self, event):
-        await self.send(text_data=json.dumps({
-            "ContentType": "chatMessage",
-            "message": event["message"],
-            "player": event["player"]
-        }))
-
-    async def playerLeave(self):
-        state = await self.getState()
-        if state == "lobby":
-            await self.deletePlayer()
-            if self.leader:
-                await self.leaderLeftInRoom()
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "updatePlayers",
-                    "content": "playerLeave",
-                    "player": self.nickname
-                }
-            )
-
     @database_sync_to_async
-    def getState(self):
-        return Rooms.objects.get(room_id=self.room_name).state
-
-    async def updatePlayers(self, event):
-        await self.send(text_data=json.dumps({
-            "ContentType": "updatePlayers",
-            "content": event["content"],
-            "player": event["player"]
-        }))
-
-    @database_sync_to_async
-    def deletePlayer(self):
-        user = Users.objects.get(nickname=self.nickname, room_id=self.room_name)
-        user.delete()
-
-    @database_sync_to_async
-    def deleteRoom(self):
+    def assignRandomID(self):
         room = Rooms.objects.get(room_id=self.room_name)
-        room.delete()
-
-    async def assignNewLeader(self):
-        user = await self.DBAssignNewLeader()
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                "type": "NewLeader",
-                "room_id": self.room_name,
-                "NewLeader": user.nickname
-            }
-        )
-
-    async def NewLeader(self, event):
-        if event["NewLeader"] == self.nickname:
-            self.leader = True
-            await self.send(text_data=json.dumps({
-                "ContentType": "NewLeader",
-                "room_id": event["room_id"],
-                "NewLeader": self.nickname
-            }))
-
-    @database_sync_to_async
-    def DBAssignNewLeader(self):
-        user = Users.objects.all().filter(room_id=self.room_name).first()
-        user.leader = True
+        user = Users.objects.get(nickname=self.nickname, room=room)
+        user.uniqueID = self.makeRandomID(16)
         user.save()
-        return user
-
-    async def leaderLeftInRoom(self):
-        userList = await self.assignUserList()
-        if len(userList) == 0:
-            await self.deleteRoom()
-        else:
-            await self.assignNewLeader()
+        return user.uniqueID
 
     @database_sync_to_async
-    def assignUserList(self):
-        userList = Users.objects.all().filter(room_id=self.room_name).values("nickname")
-        return list(userList)
+    def checkIfValidID(self, id):
+        room = Rooms.objects.get(room_id=self.room_name)
+        return frontend.models.Users.objects.filter(uniqueID=id, room=room).exists()
 
     @database_sync_to_async
-    def createNewUser(self, state):
-        if state == "lobby":
-            if self.leader:
-                return Users(room_id=self.room_name,
-                             nickname=self.text_data_json["nickname"],
-                             color=self.text_data_json["color"],
-                             eyes=self.text_data_json["eyes"],
-                             mouth=self.text_data_json["mouth"],
-                             leader=True,
-                             uniqueID="",
-                             online=False)
-            else:
-                userList = list(Users.objects.all().filter(room_id=self.room_name).values("nickname"))
-                self.nickname = self.howManyUserWithSameName(userList, self.nickname, 0)
-                return self.createNormalPlayer()
+    def changeGameState(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        room.state = "songSelection"
+        room.save()
 
-    def howManyUserWithSameName(self, userList, name, count):
-        checkName = name + f"({count})"
-        if count == 0:
-            checkName = name
-        if userList:
-            for i in userList:
-                if i["nickname"] == checkName:
-                    count += 1
-                    return self.howManyUserWithSameName(userList, name, count)
-            return checkName
-        return name
 
-    def createNormalPlayer(self):
-        return Users(room_id=self.room_name,
-                     nickname=self.nickname,
-                     color=self.text_data_json["color"],
-                     eyes=self.text_data_json["eyes"],
-                     mouth=self.text_data_json["mouth"],
-                     leader=False,
-                     uniqueID="",
-                     online=False)
+# Lobby Client ^^^^^^
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# Game Client vvvvvvv
 
-    @database_sync_to_async
-    def createNewRoom(self):
-        return Rooms(room_id=self.room_name, rounds=5, reverse=True, speed=1, state="lobby")
-
-    @database_sync_to_async
-    def roomAlreadyExists(self):
-        return Rooms.objects.filter(room_id=self.room_name).exists()
-
-    @database_sync_to_async
-    def save(self, entity):
-        return entity.save()
-
-    
-    
 
 class gameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -358,6 +403,7 @@ class gameConsumer(AsyncWebsocketConsumer):
         # Join room group
         self.nickname = ""
         self.leader = False
+        self.id = ""
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -376,35 +422,214 @@ class gameConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         self.text_data_json = json.loads(text_data)
         contentType = self.text_data_json["ContentType"]
-        if contentType == "checkID":
-            IDCheck = await self.checkID()
-            if IDCheck["idExists"]:
-                playerinfo = IDCheck["playerInfo"][0]
-                self.nickname = playerinfo["nickname"]
-                await self.updateOnline(True)
+        options = {
+            "checkID": self.checkID,
+            "getOnlineStatusGroup": self.getOnlineStatusGroup,
+            "getMaxLength": self.getMaxLength,
+            "addSong": self.addSong,
+            "removeSong": self.removeSong,
+            "startGame" : self.startGame,
+            "changeReady": self.changeReady,
+        }
+        if contentType in options:
+            await options[contentType]()
+
+    async def checkID(self):
+        IDCheck = await self.checkIfValidID()
+        if IDCheck["idExists"]:
+            playerinfo = IDCheck["playerInfo"][0]
+            self.nickname = playerinfo["nickname"]
+            self.id = playerinfo["uniqueID"]
+            await self.updateOnline(True)
+            await self.send(text_data=json.dumps({
+                "ContentType": "Accepted",
+                "idExists": True,
+                "nickname": self.nickname,
+            }))
+        else:
+            await self.send(text_data=json.dumps({
+                "ContentType": "Denied"
+            }))
+
+    async def getOnlineStatusGroup(self):
+        await self.sendOnlineStatus()
+
+    async def getMaxLength(self):
+        maxLength = await self.getMaxSongs()
+        await self.send(text_data=json.dumps({
+            "ContentType": "maxSongsLength",
+            "maxLength": maxLength,
+        }))
+
+    async def addSong(self):
+        await self.addSongToDB(self.text_data_json)
+        await self.send(text_data=json.dumps({
+            "ContentType": "addSong",
+            "song": self.text_data_json["song"],
+        }))
+        print("sending song status")
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'sendSongStatus',
+            })
+        if self.leader:
+            user = await self.getUserData()
+            if user["chosenSongs"] == await self.getMaxSongs():
+                await self.changeReady()
+
+    async def removeSong(self):
+        state = await self.getState()
+        if state == "songSelection":
+            await self.removeSongFromDB(self.text_data_json)
+            await self.send(text_data=json.dumps({
+                "ContentType": "removeSong",
+                "song": self.text_data_json["song"],
+            }))
+            await self.updateReadyStatus(False)
+            await self.send(text_data=json.dumps({
+                "ContentType": "changeReady",
+                "ready": False,
+            }))
+            print("sending song status")
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'sendSongStatus',
+                })
+
+    async def startGame(self):
+        if self.leader:
+            userList = await self.getRoomStatus()
+            maxSongs = await self.getMaxSongs()
+            state = await self.getState()
+            allMax = True
+            allReady = True
+            for user in userList:
+                if not user["ready"]:
+                    allReady = False
+                    break
+                if not user["chosenSongs"] == maxSongs:
+                    allMax = False
+                    break
+            if allMax and state == "songSelection" and allReady:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'loadingGameGroup',
+                    }
+                )
+                songList = await self.getSongs()
+                downloaded = await self.downloadSongs(songList)
+                if not downloaded:
+                    self.downloadSongs(songList)
+                if state == "songSelection" and downloaded:
+                    await self.changeGameState("game")
+                    await self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            'type': 'startGameGroup',
+                        })
+            elif not state == "songSelection":
                 await self.send(text_data=json.dumps({
-                    "ContentType": "Accepted",
-                    "idExists": True,
-                    "nickname": self.nickname,
+                    "ContentType": "startGameDenied",
+                    "reason": "game already started",
+                }))
+            elif not allMax:
+                await self.send(text_data=json.dumps({
+                    "ContentType": "startGameDenied",
+                    "reason": "not all songs chosen"
+                }))
+            elif not allReady:
+                await self.send(text_data=json.dumps({
+                    "ContentType": "startGameDenied",
+                    "reason": "not all players ready"
+                }))
+        else:
+            await self.send(text_data=json.dumps({
+                "ContentType": "startGameDenied",
+                "reason": "only leader can start game"
+            }))
+
+    async def changeReady(self):
+        state = await self.getState()
+        user = await self.getUserData()
+        if user["ready"] and not self.leader and state == "songSelection":
+            await self.updateReadyStatus(False)
+            await self.send(text_data=json.dumps({
+                "ContentType": "changeReady",
+                "ready": False,
+            }))
+        elif self.leader:
+            await self.send(text_data=json.dumps({
+                "ContentType": "changeReadyDenied",
+                "reason": "Leader cannot unready"
+            }))
+        elif not state == "songSelection":
+            await self.send(text_data=json.dumps({
+                "ContentType": "changeReadyDenied",
+                "reason": "game already started"
+            }))
+        else:
+            if user["chosenSongs"] == await self.getMaxSongs():
+                await self.updateReadyStatus(True)
+                await self.send(text_data=json.dumps({
+                    "ContentType": "changeReady",
+                    "ready": True,
                 }))
             else:
                 await self.send(text_data=json.dumps({
-                    "ContentType": "Denied"
+                    "ContentType": "changeReadyDenied",
+                    "reason": "Not all songs chosen"
                 }))
-        elif contentType == "getOnlineStatusGroup":
-            await self.sendOnlineStatus()
-        elif contentType == "getMaxLength":
-            maxLength = await self.getMaxSongs()
-            await self.send(text_data=json.dumps({
-                "ContentType": "maxSongsLength",
-                "maxLength": maxLength,
-            }))
 
-    @database_sync_to_async
-    def getMaxSongs(self):
-        return list(Rooms.objects.all().filter(room_id=self.room_name).values("rounds"))[0]["rounds"]
+    # End of Receive message from WebSocket
+    
+    async def loadingGameGroup(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "loadingGame",
+        }))
+    
+    async def downloadSongs(self, songList):
+        dirList = os.listdir("C:\\Users\\a3bei\\Desktop\\Projects\\GURK_Music_Quiz\\frontend\\songfiles")
+        for song in songList:
+            try:
+                await self.downloadSong(song, dirList)
+            except:
+                return False
+        return True
 
+    async def downloadSong(self, song, dirList):
+        songId = song["song_id"]
+        if songId + ".mp3" in dirList:
+            return
+        video_url = "https://www.youtube.com/watch?v="+ songId
+        video_info = youtube_dl.YoutubeDL().extract_info(
+            url = video_url,download=False
+        )
+        filename = "C:\\Users\\a3bei\\Desktop\\Projects\\GURK_Music_Quiz\\frontend\\songfiles\\" + songId + ".mp3"
+        options={
+            'format':'bestaudio/best',
+            'keepvideo':False,
+            'outtmpl':filename,
+        }
+        with youtube_dl.YoutubeDL(options) as ydl:
+            ydl.download([video_info['webpage_url']])
+
+    async def startGameGroup(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "startGameGroup",
+        }))
+    
     async def updatePlayerStatus(self, event):
+        userData = await self.getUserData()
+        if userData["leader"]:
+            self.leader = True
+            print("leader", self.nickname)
+            await self.send(text_data=json.dumps({
+                "ContentType": "setLeader",
+                "leader": True,
+            }))
         await self.send(text_data=json.dumps({
             "ContentType": "updatePlayerStatus",
             "userList": event["userList"]
@@ -415,7 +640,7 @@ class gameConsumer(AsyncWebsocketConsumer):
         await self.sendOnlineStatus()
 
     async def sendOnlineStatus(self):
-        userList = await self.getOnlineStatusGroup()
+        userList = await self.getRoomStatus()
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -424,26 +649,98 @@ class gameConsumer(AsyncWebsocketConsumer):
             }
         )
 
+    async def sendSongStatus(self, event):
+        userList = await self.getRoomStatus()
+        await self.send(text_data=json.dumps({
+            "ContentType": "updateSongs",
+            "userList": userList
+        }))
+
+
+    # Database Functions Game Client
+        
     @database_sync_to_async
-    def getOnlineStatusGroup(self):
+    def changeGameState(self, state):
+        room = Rooms.objects.get(room_id=self.room_name)
+        room.state = state
+        room.save()
+
+    @database_sync_to_async
+    def getRoomStatus(self):
         #get online status of all players in current room
-        userList = Users.objects.all().filter(room_id=self.room_name).values("nickname", "online", "uniqueID")
+        room = Rooms.objects.get(room_id=self.room_name)
+        userList = Users.objects.all().filter(room=room).values()
         return list(userList)
 
     @database_sync_to_async
     def updateOnline(self, status):
-        user = Users.objects.get(nickname=self.nickname, room_id=self.room_name)
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(nickname=self.nickname, room=room)
         user.online = status
         user.save()
 
     @database_sync_to_async
-    def checkID(self):
-        idExists = Users.objects.filter(room_id=self.room_name, uniqueID=self.text_data_json["id"]).exists()
-        playerInfo = Users.objects.filter(room_id=self.room_name, uniqueID=self.text_data_json["id"]).values()
+    def checkIfValidID(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        idExists = Users.objects.filter(room=room , uniqueID=self.text_data_json["id"]).exists()
+        playerInfo = Users.objects.filter(room=room, uniqueID=self.text_data_json["id"]).values()
         return {
             "idExists": idExists,
             "playerInfo": list(playerInfo)
         }
     
+    @database_sync_to_async
+    def getMaxSongs(self):
+        return list(Rooms.objects.all().filter(room_id=self.room_name).values("rounds"))[0]["rounds"]
 
+    @database_sync_to_async
+    def addSongToDB(self, data):
+        duration = data["song"]["duration"]
+        duraStr = duration.split(":")
+        duration = int(duraStr[0]) * 60 + int(duraStr[1])
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(room=room, nickname=self.nickname)
+        song = Songs(
+            room_id=self.room_name,
+            song_id=data["song"]["id"],
+            artist=data["song"]["artist"],
+            title=data["song"]["title"],
+            album=data["song"]["album"],
+            duration=duration,
+            user=user)
+        song.save()
+        songsCount = Songs.objects.all().filter(user=user).count()
+        user.chosenSongs = songsCount
+        user.save()
 
+    @database_sync_to_async
+    def removeSongFromDB(self, data):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(room=room, nickname=self.nickname)
+        song = Songs.objects.get(user=user, song_id=data["song"]["id"])
+        song.delete()
+        songsCount = Songs.objects.all().filter(user=user).count()
+        user.chosenSongs = songsCount
+        user.save()
+    
+    @database_sync_to_async
+    def getState(self):
+        return Rooms.objects.get(room_id=self.room_name).state
+
+    @database_sync_to_async
+    def getSongs(self):
+        songs = Songs.objects.all().filter(room_id=self.room_name).values()
+        return list(songs)
+
+    @database_sync_to_async
+    def getUserData(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(room=room, uniqueID=self.id)
+        return user.__dict__
+
+    @database_sync_to_async
+    def updateReadyStatus(self, status):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(room=room, uniqueID=self.id)
+        user.ready = status
+        user.save()
