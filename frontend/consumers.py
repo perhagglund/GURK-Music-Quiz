@@ -1,4 +1,5 @@
 from enum import unique
+from itertools import count
 import json
 import random
 from turtle import down, up
@@ -8,6 +9,8 @@ import frontend.models
 from frontend.models import Rooms, Users, Songs
 import youtube_dl
 import os
+import time
+import threading
 
 class lobbyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -404,6 +407,7 @@ class gameConsumer(AsyncWebsocketConsumer):
         self.nickname = ""
         self.leader = False
         self.id = ""
+        self.downloaded = False
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -513,17 +517,12 @@ class gameConsumer(AsyncWebsocketConsumer):
                     allMax = False
                     break
             if allMax and state == "songSelection" and allReady:
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'loadingGameGroup',
-                    }
-                )
                 songList = await self.getSongs()
-                downloaded = await self.downloadSongs(songList)
-                if not downloaded:
-                    self.downloadSongs(songList)
-                if state == "songSelection" and downloaded:
+                await self.downloadSongs(songList)
+                if not self.downloaded:
+                    while not self.downloaded:
+                        await self.downloadSongs(songList)
+                if state == "songSelection" and self.downloaded:
                     await self.changeGameState("game")
                     await self.channel_layer.group_send(
                         self.room_group_name,
@@ -560,11 +559,6 @@ class gameConsumer(AsyncWebsocketConsumer):
                 "ContentType": "changeReady",
                 "ready": False,
             }))
-        elif self.leader:
-            await self.send(text_data=json.dumps({
-                "ContentType": "changeReadyDenied",
-                "reason": "Leader cannot unready"
-            }))
         elif not state == "songSelection":
             await self.send(text_data=json.dumps({
                 "ContentType": "changeReadyDenied",
@@ -587,34 +581,56 @@ class gameConsumer(AsyncWebsocketConsumer):
     
     async def loadingGameGroup(self, event):
         await self.send(text_data=json.dumps({
-            "ContentType": "loadingGame",
+            "ContentType": "updateLoadingPercent",
         }))
-    
-    async def downloadSongs(self, songList):
-        dirList = os.listdir("C:\\Users\\a3bei\\Desktop\\Projects\\GURK_Music_Quiz\\frontend\\songfiles")
-        for song in songList:
-            try:
-                await self.downloadSong(song, dirList)
-            except:
-                return False
-        return True
 
-    async def downloadSong(self, song, dirList):
-        songId = song["song_id"]
-        if songId + ".mp3" in dirList:
-            return
-        video_url = "https://www.youtube.com/watch?v="+ songId
-        video_info = youtube_dl.YoutubeDL().extract_info(
-            url = video_url,download=False
-        )
-        filename = "C:\\Users\\a3bei\\Desktop\\Projects\\GURK_Music_Quiz\\frontend\\songfiles\\" + songId + ".mp3"
-        options={
-            'format':'bestaudio/best',
-            'keepvideo':False,
-            'outtmpl':filename,
-        }
-        with youtube_dl.YoutubeDL(options) as ydl:
-            ydl.download([video_info['webpage_url']])
+    #async def downloadFailed(self, event):
+    #    await self.send(text_data=json.dumps({
+    #        "ContentType": "downloadFailed",
+    #        "reason": "failed to download song"
+    #    }))
+    #
+    #async def downloadSongs(self, songList):
+    #    dirList = os.listdir("C:\\Users\\a3bei\\Desktop\\Projects\\GURK_Music_Quiz\\frontend\\songfiles")
+    #    await self.channel_layer.group_send(
+    #        self.room_group_name,
+    #        {
+    #            'type': 'loadingGameGroup',
+    #        })
+    #    downloadThread = threading.Thread(target=self.download, args=(songList, dirList))
+    #    downloadThread.start()
+    #    downloadThread.join()
+    #    if not self.downloaded:
+    #        await self.channel_layer.group_send(
+    #            self.room_group_name,
+    #            {
+    #                'type': 'downloadFailed',
+    #            })
+#
+    #def download(self, songList, dirList):
+    #    for song in songList:
+    #        try:
+    #            self.downloadSong(song, dirList)
+    #        except:
+    #            self.downloaded = False
+    #            return
+    #        
+    #def downloadSong(self, song, dirList):
+    #    songId = song["song_id"]
+    #    if songId + ".mp3" in dirList:
+    #        return
+    #    video_url = "https://www.youtube.com/watch?v="+ songId
+    #    video_info = youtube_dl.YoutubeDL().extract_info(
+    #        url = video_url,download=False
+    #    )
+    #    filename = "C:\\Users\\a3bei\\Desktop\\Projects\\GURK_Music_Quiz\\frontend\\songfiles\\" + songId + ".mp3"
+    #    options={
+    #        'format':'bestaudio/best',
+    #        'keepvideo':False,
+    #        'outtmpl':filename,
+    #    }
+    #    with youtube_dl.YoutubeDL(options) as ydl:
+    #        ydl.download([video_info['webpage_url']])
 
     async def startGameGroup(self, event):
         await self.send(text_data=json.dumps({

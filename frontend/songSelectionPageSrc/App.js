@@ -14,6 +14,7 @@ const App = () => {
     const [errorMsg, setErrorMsg] = useState("")
     const [ready, setReady] = useState(false)
     const [readyText, setReadyText] = useState("Not Ready")
+    const [loadingPercent, setLoadingPercent] = useState(0)
     useEffect(() => {
         if(!localStorage.getItem("cookieAccepted")){
             setShowCookieBanner("")
@@ -96,6 +97,13 @@ const App = () => {
             } break
             case "changeReadyDenied": {
                 setErrorMsg("Could not ready: " + data.reason)
+            } break
+            case "updateLoadingPercent": {
+                setLoadingPercent(data.loadingPercent)
+                setGameState("Loading game: " + data.loadingPercent + "%")
+            } break
+            case "downloadFailed": {
+                setErrorMsg("Could not download songs: " + data.reason)
             } break
             default:
                 console.error("Unknown message type") 
