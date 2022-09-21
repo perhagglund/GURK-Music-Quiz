@@ -519,9 +519,6 @@ class gameConsumer(AsyncWebsocketConsumer):
             if allMax and state == "songSelection" and allReady:
                 songList = await self.getSongs()
                 await self.downloadSongs(songList)
-                if not self.downloaded:
-                    while not self.downloaded:
-                        await self.downloadSongs(songList)
                 if state == "songSelection" and self.downloaded:
                     await self.changeGameState("game")
                     await self.channel_layer.group_send(
@@ -579,58 +576,14 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     # End of Receive message from WebSocket
     
+    async def downloadSongs(self, event): 
+        time.sleep(6)
+        self.downloaded = True
+
     async def loadingGameGroup(self, event):
         await self.send(text_data=json.dumps({
             "ContentType": "updateLoadingPercent",
         }))
-
-    #async def downloadFailed(self, event):
-    #    await self.send(text_data=json.dumps({
-    #        "ContentType": "downloadFailed",
-    #        "reason": "failed to download song"
-    #    }))
-    #
-    #async def downloadSongs(self, songList):
-    #    dirList = os.listdir("C:\\Users\\a3bei\\Desktop\\Projects\\GURK_Music_Quiz\\frontend\\songfiles")
-    #    await self.channel_layer.group_send(
-    #        self.room_group_name,
-    #        {
-    #            'type': 'loadingGameGroup',
-    #        })
-    #    downloadThread = threading.Thread(target=self.download, args=(songList, dirList))
-    #    downloadThread.start()
-    #    downloadThread.join()
-    #    if not self.downloaded:
-    #        await self.channel_layer.group_send(
-    #            self.room_group_name,
-    #            {
-    #                'type': 'downloadFailed',
-    #            })
-#
-    #def download(self, songList, dirList):
-    #    for song in songList:
-    #        try:
-    #            self.downloadSong(song, dirList)
-    #        except:
-    #            self.downloaded = False
-    #            return
-    #        
-    #def downloadSong(self, song, dirList):
-    #    songId = song["song_id"]
-    #    if songId + ".mp3" in dirList:
-    #        return
-    #    video_url = "https://www.youtube.com/watch?v="+ songId
-    #    video_info = youtube_dl.YoutubeDL().extract_info(
-    #        url = video_url,download=False
-    #    )
-    #    filename = "C:\\Users\\a3bei\\Desktop\\Projects\\GURK_Music_Quiz\\frontend\\songfiles\\" + songId + ".mp3"
-    #    options={
-    #        'format':'bestaudio/best',
-    #        'keepvideo':False,
-    #        'outtmpl':filename,
-    #    }
-    #    with youtube_dl.YoutubeDL(options) as ydl:
-    #        ydl.download([video_info['webpage_url']])
 
     async def startGameGroup(self, event):
         await self.send(text_data=json.dumps({
