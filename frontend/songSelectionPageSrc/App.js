@@ -146,7 +146,7 @@ const App = () => {
                     <Button className={"readyButton"} onClick={handleReady} disabled={false} name={readyText}/>
                 </div> 
             </div>
-            {players.map(player => <div>id:{player.uniqueID} name:{player.nickname} online:{String(player.online)} chosenSongs: {player.chosenSongs} ready: {player.ready}</div>)}
+            {players.map(player => <div>id:{player.uniqueID} name:{player.nickname} online:{String(player.online)} chosenSongs: {player.chosenSongs} ready: {String(player.ready)}</div>)}
             <div>{gameState}</div> 
             <div>{errorMsg}</div>
             <div className={"notcookie-container"} style={cookieBannerStyle}>

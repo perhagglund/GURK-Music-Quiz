@@ -111,31 +111,29 @@ const App = () => {
                         })
                         setPlayerList(players)
                         if(data.content === "playerJoined"){
-                            setMessages(messages.concat(
-                                {
-                                    "type": "joinMessage",
-                                    "username": data.player,
-                                    "message": "Has joined the server",
-                                    "time": "HeteroTime"
-                                }
-                            ))
+                            setMessages(messages => [...messages, {
+                                "type": "joinMessage",
+                                "username": data.player,
+                                "message": "Has joined the server",
+                                "time": "HeteroTime"
+                            }])
                         } else if(data.content === "playerLeave") {
-                            setMessages(messages.concat({
+                            setMessages(messages => [...messages, {
                                 "type": "leaveMessage",
                                 "username": data.player,
                                 "message": "Has left the server",
                                 "time": "HeteroTime"
-                            }))
+                            }])
                         }
                     })
                 } break
                 case "chatMessage": {
-                    setMessages(messages.concat({
+                    setMessages(messages =>[...messages, {
                         "type": "chatMessage",
                         "username": data.player,
                         "message": data.message,
                         "time": "geytime"
-                    }))
+                    }])
                 } break
                 case "newName":{
                     setNickname(data.NewName)
@@ -226,7 +224,11 @@ const App = () => {
                     />
                     <div className={"side-container"}>
                         <Players playerList={playerList}/>
-                        <Chat messages={messages} handleMessageChange={onMessageChange} inputValue={newMessage} handleEnterPress={handleEnterPress}/>
+                        <Chat messages={messages} 
+                              handleMessageChange={onMessageChange} 
+                              inputValue={newMessage} 
+                              handleEnterPress={handleEnterPress}
+                        />
                     </div>
                 </div>
             </div>
