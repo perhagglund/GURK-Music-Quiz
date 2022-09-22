@@ -47,6 +47,7 @@ const App = () => {
 
     const sendMessage = () => {
             if(newMessage.length > 0){
+                console.log(newMessage, nickname)
                 client.send(JSON.stringify({
                     "ContentType": "chatMessage",
                     "message": newMessage,
@@ -110,30 +111,11 @@ const App = () => {
                             })
                         })
                         setPlayerList(players)
-                        if(data.content === "playerJoined"){
-                            setMessages(messages => [...messages, {
-                                "type": "joinMessage",
-                                "username": data.player,
-                                "message": "Has joined the server",
-                                "time": "HeteroTime"
-                            }])
-                        } else if(data.content === "playerLeave") {
-                            setMessages(messages => [...messages, {
-                                "type": "leaveMessage",
-                                "username": data.player,
-                                "message": "Has left the server",
-                                "time": "HeteroTime"
-                            }])
-                        }
+                        setMessages(data.chat)
                     })
                 } break
                 case "chatMessage": {
-                    setMessages(messages =>[...messages, {
-                        "type": "chatMessage",
-                        "username": data.player,
-                        "message": data.message,
-                        "time": "geytime"
-                    }])
+                    setMessages(data.chat)
                 } break
                 case "newName":{
                     setNickname(data.NewName)

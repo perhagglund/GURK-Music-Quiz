@@ -1,12 +1,13 @@
 from enum import unique
-from itertools import count
+from hashlib import new
+from itertools import chain, count
 import json
 import random
 from turtle import down, up
 from channels.db import DatabaseSyncToAsync, database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 import frontend.models
-from frontend.models import Rooms, Users, Songs
+from frontend.models import Rooms, Users, Songs, Chat
 import youtube_dl
 import os
 import time
@@ -61,12 +62,16 @@ class lobbyConsumer(AsyncWebsocketConsumer):
             user = await self.createNewUser(state)
             if user:
                 await self.save(user)
+                newChat = await self.createNewChatMessage("Has joined the server", "joinMessage")
+                await self.save(newChat)
+                chat = await self.getRoomChat()
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
                         "type": "updatePlayers",
                         "content": "playerJoined",
-                        "player": self.nickname
+                        "player": self.nickname,
+                        "chat": chat
                     }
                 )
 
@@ -76,24 +81,32 @@ class lobbyConsumer(AsyncWebsocketConsumer):
         user = await self.createNewUser(state)
         if user:
             await self.save(user)
+            newChat = await self.createNewChatMessage("Has joined the server", "joinMessage")
+            await self.save(newChat)
+            chat = await self.getRoomChat()
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     "type": "updatePlayers",
                     "content": "playerJoined",
-                    "player": self.nickname
+                    "player": self.nickname,
+                    "chat": chat
                 }
             )
 
     async def chatMessage(self):
+        newChat = await self.createNewChatMessage(self.text_data_json["message"], "chatMessage")
+        await self.save(newChat)
+        chat = await self.getRoomChat()
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 "type": "chatMessageGroup",
-                "message": self.text_data_json["message"],
-                "player": self.nickname
+                "chat": chat
             }
         )
+
+        
 
     async def checkboxChange(self):
         if self.leader:
@@ -203,14 +216,16 @@ class lobbyConsumer(AsyncWebsocketConsumer):
     async def chatMessageGroup(self, event):
         await self.send(text_data=json.dumps({
             "ContentType": "chatMessage",
-            "message": event["message"],
-            "player": event["player"]
+            "chat": event["chat"],
         }))
 
     async def playerLeave(self):
         state = await self.getState()
         if state == "lobby":
             await self.deletePlayer()
+            newChat = await self.createNewChatMessage("Has left the server", "leaveMessage")
+            await self.save(newChat)
+            chat = await self.getRoomChat()
             if self.leader:
                 await self.leaderLeftInRoom()
             await self.channel_layer.group_send(
@@ -218,7 +233,8 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "updatePlayers",
                     "content": "playerLeave",
-                    "player": self.nickname
+                    "player": self.nickname,
+                    "chat": chat
                 }
             )
 
@@ -226,7 +242,8 @@ class lobbyConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             "ContentType": "updatePlayers",
             "content": event["content"],
-            "player": event["player"]
+            "player": event["player"],
+            "chat": event["chat"]
         }))
 
     async def assignNewLeader(self):
@@ -390,6 +407,23 @@ class lobbyConsumer(AsyncWebsocketConsumer):
         room = Rooms.objects.get(room_id=self.room_name)
         room.state = "songSelection"
         room.save()
+
+    @database_sync_to_async
+    def createNewChatMessage(self, message, type):
+        room = Rooms.objects.get(room_id=self.room_name)
+        return Chat(
+            room=room,
+            sender=self.nickname,
+            message=message,
+            type = type,
+            time = "geytime"
+        )
+
+    @database_sync_to_async
+    def getRoomChat(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        chat = list(Chat.objects.all().filter(room=room).values("id", "type", "room", "message", "sender", "time"))
+        return chat
 
 
 # Lobby Client ^^^^^^
@@ -573,6 +607,11 @@ class gameConsumer(AsyncWebsocketConsumer):
                     "ContentType": "changeReadyDenied",
                     "reason": "Not all songs chosen"
                 }))
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'sendSongStatus',
+            })
 
     # End of Receive message from WebSocket
     
