@@ -8,7 +8,7 @@ const ChatField = (props) => {
     }
     return (
         <div>
-            {props.messages.map(message => <ChatMessage type={message.type} user={message.username} message={message.message}/>)}
+            {props.messages.map(message => <ChatMessage type={message.type} user={message.sender} message={message.message}/>)}
         </div>
     )
 }

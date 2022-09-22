@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.db import models
 
 
@@ -34,3 +35,12 @@ class Songs(models.Model):
     album = models.CharField(max_length=255)
     duration = models.IntegerField()
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
+
+class Chat(models.Model):
+    id = models.IntegerField(primary_key=True)
+    type = models.CharField(max_length=16)
+    room = models.ForeignKey(Rooms, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    sender = models.CharField(max_length=255)
+    time = models.CharField(max_length=255)
+    
