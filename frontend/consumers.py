@@ -3,20 +3,17 @@ from hashlib import new
 from itertools import chain, count
 import json
 import random
-from turtle import down, up
+from turtle import delay, down, up
 from channels.db import DatabaseSyncToAsync, database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 import frontend.models
 from frontend.models import Rooms, Users, Songs, Chat
-import youtube_dl
-import os
-import time
-import threading
+import frontend.tasks as tasks
 
 class lobbyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
+        self.room_group_name = 'lobby_%s' % self.room_name
         # Join room group
         self.nickname = ""
         self.leader = False
@@ -436,7 +433,7 @@ class lobbyConsumer(AsyncWebsocketConsumer):
 class gameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
+        self.room_group_name = 'game_%s' % self.room_name
         # Join room group
         self.nickname = ""
         self.leader = False
@@ -615,9 +612,11 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     # End of Receive message from WebSocket
     
-    async def downloadSongs(self, event): 
-        time.sleep(6)
-        self.downloaded = True
+    async def downloadSongs(self, songList): 
+        print("downloading songs")
+        print(self.room_group_name)
+        tasks.downloadSongs.delay(songList, self.room_group_name)
+        
 
     async def loadingGameGroup(self, event):
         await self.send(text_data=json.dumps({
@@ -664,6 +663,11 @@ class gameConsumer(AsyncWebsocketConsumer):
             "userList": userList
         }))
 
+    async def downloadCompleted(self, event, type="downloadCompleted"):
+        print("download completed")
+        await self.send(text_data=json.dumps({
+            "ContentType": "downloadCompleted",
+        }))
 
     # Database Functions Game Client
         

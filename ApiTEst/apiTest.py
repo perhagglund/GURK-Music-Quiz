@@ -18,20 +18,3 @@ def downloadSong(songId):
         ydl.download([video_info['webpage_url']])
 
 
-
-threadList = []
-for songId in songIds:
-    downloadThread = threading.Thread(target=downloadSong, args=(songId,))
-    threadList.append(downloadThread)
-
-for thread in threadList:
-    thread.start()
-    print("Thread started")
-
-print("All threads started")
-
-for thread in threadList:
-    thread.join()
-    print("Thread Finnished")
-
-print("All songs downloaded")

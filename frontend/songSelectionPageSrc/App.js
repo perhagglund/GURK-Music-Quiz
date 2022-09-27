@@ -105,6 +105,10 @@ const App = () => {
             case "downloadFailed": {
                 setErrorMsg("Could not download songs: " + data.reason)
             } break
+            case "downloadCompleted": {
+                console.log("download completed")
+                setGameState("In game")
+            } break
             default:
                 console.error("Unknown message type") 
                 
