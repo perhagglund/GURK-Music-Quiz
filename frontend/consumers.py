@@ -550,13 +550,13 @@ class gameConsumer(AsyncWebsocketConsumer):
             if allMax and state == "songSelection" and allReady:
                 songList = await self.getSongs()
                 await self.downloadSongs(songList)
-                if state == "songSelection" and self.downloaded:
-                    await self.changeGameState("game")
-                    await self.channel_layer.group_send(
-                        self.room_group_name,
-                        {
-                            'type': 'startGameGroup',
-                        })
+                await self.changeGameState("loading")
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "setGameLoading"
+                    }
+                )
             elif not state == "songSelection":
                 await self.send(text_data=json.dumps({
                     "ContentType": "startGameDenied",
@@ -613,10 +613,12 @@ class gameConsumer(AsyncWebsocketConsumer):
     # End of Receive message from WebSocket
     
     async def downloadSongs(self, songList): 
-        print("downloading songs")
-        print(self.room_group_name)
         tasks.downloadSongs.delay(songList, self.room_group_name)
         
+    async def setGameLoading(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "loadingGame"
+        }))
 
     async def loadingGameGroup(self, event):
         await self.send(text_data=json.dumps({
@@ -624,8 +626,12 @@ class gameConsumer(AsyncWebsocketConsumer):
         }))
 
     async def startGameGroup(self, event):
+        if self.leader:
+            for song in event["songList"]:
+                await self.applyRandomId(song)
         await self.send(text_data=json.dumps({
             "ContentType": "startGameGroup",
+            "songList": event["songList"],
         }))
     
     async def updatePlayerStatus(self, event):
@@ -664,13 +670,21 @@ class gameConsumer(AsyncWebsocketConsumer):
         }))
 
     async def downloadCompleted(self, event, type="downloadCompleted"):
-        print("download completed")
         await self.send(text_data=json.dumps({
             "ContentType": "downloadCompleted",
         }))
 
     # Database Functions Game Client
+    
+    @database_sync_to_async
+    def applyRandomId(self, songdata):
+        song = Songs.objects.get(room_id=self.room_name, song_id=songdata["song_id"])
+        print(song)
+        song.randomId = songdata["randomId"]
+        song.filelocation = songdata["filename"]
+        song.save()
         
+
     @database_sync_to_async
     def changeGameState(self, state):
         room = Rooms.objects.get(room_id=self.room_name)
@@ -719,7 +733,9 @@ class gameConsumer(AsyncWebsocketConsumer):
             title=data["song"]["title"],
             album=data["song"]["album"],
             duration=duration,
-            user=user)
+            user=user,
+            randomId="",
+            filelocation="")
         song.save()
         songsCount = Songs.objects.all().filter(user=user).count()
         user.chosenSongs = songsCount
