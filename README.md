@@ -2,8 +2,8 @@
 Music quiz made by:
 
 
-Lead backend developer: [Adam Beijar](https://github.com/adambeijar)
-Lead frontend developer: [Per Hägglund](https://github.com/perhagglund)
+Lead backend developer: [Adam Beijar](https://github.com/adambeijar)<br>
+Lead frontend developer: [Per Hägglund](https://github.com/perhagglund)<br>
 Lead Graphics designer: Daniel Ehrngren
 
 This is a game where you guess songs that are in reverse
