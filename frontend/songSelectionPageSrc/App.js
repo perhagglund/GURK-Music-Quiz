@@ -15,6 +15,7 @@ const App = () => {
     const [ready, setReady] = useState(false)
     const [readyText, setReadyText] = useState("Not Ready")
     const [loadingPercent, setLoadingPercent] = useState(0)
+    const [downloadedSongs, setDownloadedSongs] = useState([])
     useEffect(() => {
         if(!localStorage.getItem("cookieAccepted")){
             setShowCookieBanner("")
@@ -80,6 +81,10 @@ const App = () => {
                 setPlayers(data.userList)
             } break
             case "startGameGroup": {
+                console.log("In game")
+                console.log(data.songList)
+                setDownloadedSongs(data.songList)
+                playAudio(data.songList)
                 setGameState("In game")
             } break
             case "startGameDenied": {
@@ -104,6 +109,9 @@ const App = () => {
             } break
             case "downloadFailed": {
                 setErrorMsg("Could not download songs: " + data.reason)
+            } break
+            case "downloadCompleted": {
+                setGameState("In game")
             } break
             default:
                 console.error("Unknown message type") 
@@ -137,6 +145,14 @@ const App = () => {
         }))
     }
 
+    const playAudio = (songList) => {
+        songList.forEach(song => {
+            console.log("Playing song: " + song.song_id)
+            const audio = new Audio(song.filename)
+            audio.play() 
+        });
+    }
+
     return (
         <div className={"body"}>
             <div className={"body-container"}>
@@ -152,6 +168,10 @@ const App = () => {
             <div className={"notcookie-container"} style={cookieBannerStyle}>
                 <CookieBanner onClick={changeVisibility} />
             </div>
+            {downloadedSongs.map(song => <div>{song.filename} {song.randomId} {song.song_id}</div>)}
+            <audio controls>
+                <source src="" type="audio/mpeg"/>
+            </audio>
         </div>
     )
 }

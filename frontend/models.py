@@ -35,6 +35,8 @@ class Songs(models.Model):
     album = models.CharField(max_length=255)
     duration = models.IntegerField()
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    randomId = models.CharField(max_length=16)
+    filelocation = models.CharField(max_length=255)
 
 class Chat(models.Model):
     id = models.IntegerField(primary_key=True)

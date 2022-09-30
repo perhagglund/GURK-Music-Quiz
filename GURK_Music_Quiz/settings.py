@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-*4%z+_^l^=-*-90#x!(*gy7-v_19!7u!ll1p9+@4+s47jo7na^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["192.168.1.197", "127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -132,6 +132,14 @@ ASGI_APPLICATION = "GURK_Music_Quiz.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        }
     }
 }
+
+
+# Celery settings
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
