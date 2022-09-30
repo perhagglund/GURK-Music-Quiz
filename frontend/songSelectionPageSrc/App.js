@@ -5,6 +5,7 @@ import CookieBanner from "../joinGamePageSrc/charSelectComponents/CookieBanner";
 import Button from "../landingPageSrc/components/Button";
 
 const App = () => {
+    const roomName = window.location.pathname.split("/")[1]
     const [songs, setSong] = useState([])
     const session = sessionStorage.getItem("uniqueID")
     const [showCookieBanner, setShowCookieBanner] = useState('none')
@@ -81,11 +82,8 @@ const App = () => {
                 setPlayers(data.userList)
             } break
             case "startGameGroup": {
-                console.log("In game")
-                console.log(data.songList)
-                setDownloadedSongs(data.songList)
-                playAudio(data.songList)
                 setGameState("In game")
+                window.location.pathname = roomName + "/game"
             } break
             case "startGameDenied": {
                 setErrorMsg("Could not start game: " + data.reason)
@@ -168,10 +166,6 @@ const App = () => {
             <div className={"notcookie-container"} style={cookieBannerStyle}>
                 <CookieBanner onClick={changeVisibility} />
             </div>
-            {downloadedSongs.map(song => <div>{song.filename} {song.randomId} {song.song_id}</div>)}
-            <audio controls>
-                <source src="" type="audio/mpeg"/>
-            </audio>
         </div>
     )
 }

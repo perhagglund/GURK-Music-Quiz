@@ -430,10 +430,10 @@ class lobbyConsumer(AsyncWebsocketConsumer):
 # Game Client vvvvvvv
 
 
-class gameConsumer(AsyncWebsocketConsumer):
+class selectionConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'game_%s' % self.room_name
+        self.room_group_name = 'selection_%s' % self.room_name
         # Join room group
         self.nickname = ""
         self.leader = False
@@ -772,3 +772,126 @@ class gameConsumer(AsyncWebsocketConsumer):
         user = Users.objects.get(room=room, uniqueID=self.id)
         user.ready = status
         user.save()
+
+
+# Selection Client ^^^^^^
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# Game Client vvvvvvv
+
+
+class gameConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_group_name = 'game_%s' % self.room_name
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+        self.nickname = ""
+        self.leader = False
+        self.id = ""
+        self.downloaded = False
+        self.room = {
+            "state": "game",
+            "rounds": 0,
+            "currentRound": 0,
+            "reverse": False,
+            "speed": 0,
+        }
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+        self.text_data_json = json.loads(text_data)
+        contentType = self.text_data_json["ContentType"]
+        options = {
+            "checkID": self.checkID,
+            "joinRoom": self.joinRoom,
+        }
+        if contentType in options:
+            await options[contentType]()
+
+    # Receive message from room group
+
+    async def checkID(self):
+        IDCheck = await self.checkIfValidID()
+        if IDCheck["idExists"]:
+            playerinfo = IDCheck["playerInfo"][0]
+            self.nickname = playerinfo["nickname"]
+            self.id = playerinfo["uniqueID"]
+            await self.updateOnline(True)
+            await self.send(text_data=json.dumps({
+                "ContentType": "Accepted",
+                "idExists": True,
+                "nickname": self.nickname,
+            }))
+        else:
+            await self.send(text_data=json.dumps({
+                "ContentType": "Denied"
+            }))
+
+    async def joinRoom(self):
+        room = await self.getRoomData()
+        roomUsers = await self.getUserData()
+        print(room)
+        print(roomUsers)
+        self.room = {
+            "state": "game",
+            "rounds": room["rounds"],
+            "currentRound": 0,
+            "reverse": room["reverse"],
+            "speed": float(room["speed"]),
+        }
+        await self.send(text_data=json.dumps({
+            "ContentType": "RoomData",
+            "roomReverse": room["reverse"],
+            "roomRounds": float(room["rounds"]),
+            "roomSpeed": float(room["speed"]),
+            "roomUsers": roomUsers,
+        }))
+    # End of receive
+
+
+
+    # Database Functions
+
+    @database_sync_to_async
+    def checkIfValidID(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        idExists = Users.objects.filter(room=room , uniqueID=self.text_data_json["id"]).exists()
+        playerInfo = Users.objects.filter(room=room, uniqueID=self.text_data_json["id"]).values()
+        return {
+            "idExists": idExists,
+            "playerInfo": list(playerInfo)
+        }
+
+    @database_sync_to_async
+    def updateOnline(self, status):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(nickname=self.nickname, room=room)
+        user.online = status
+        user.save()
+
+    @database_sync_to_async
+    def getRoomData(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        return room.__dict__
+
+    @database_sync_to_async
+    def getUserData(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = list(Users.objects.all().filter(room=room).values())
+        return user
+
+    @database_sync_to_async
+    def getSongList(self):
+        songs = Songs.objects.all().filter(room_id=self.room_name).values()
+        return list(songs)
