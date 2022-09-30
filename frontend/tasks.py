@@ -30,18 +30,21 @@ def randomSongId(length):
     return result_str
 
 def downloadSong(songId):
-    video_url = "https://www.youtube.com/watch?v="+ songId
-    video_info = youtube_dl.YoutubeDL().extract_info(
-        url = video_url,download=False
-    )
-    filename = "songs/" + songId + ".mp3"
-    options={
-        'format':'bestaudio/best',
-        'keepvideo':False,
-        'outtmpl':"./frontend/static/"+filename,
-    }
-    with youtube_dl.YoutubeDL(options) as ydl:
-        ydl.download([video_info['webpage_url']])
+    try:
+        video_url = "https://www.youtube.com/watch?v="+ songId
+        video_info = youtube_dl.YoutubeDL().extract_info(
+            url = video_url,download=False
+        )
+        filename = "songs/" + songId + ".mp3"
+        options={
+            'format':'bestaudio/best',
+            'keepvideo':False,
+            'outtmpl':"./frontend/static/"+filename,
+        }
+        with youtube_dl.YoutubeDL(options) as ydl:
+            ydl.download([video_info['webpage_url']])
+    except:
+        filename = downloadSong(songId)
     return filename
 
 @shared_task

@@ -136,13 +136,13 @@ const App = () => {
                 } break
                 case "startGameUser": {
                     sessionStorage.setItem("uniqueID", data.id)
-                    window.location.pathname = roomName + "/game"
+                    window.location.pathname = roomName + "/selection"
                 } break
                 case "checkIDResponse":{
                     if(data.gameState){
                         if(data.idExists){
                             sessionStorage.setItem("uniqueID", data.id)
-                            window.location.pathname = roomName + "/game"
+                            window.location.pathname = roomName + "/selection"
                         }
                     } else {
                         window.location.pathname = "/"

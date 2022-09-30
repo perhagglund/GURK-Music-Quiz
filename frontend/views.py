@@ -19,6 +19,11 @@ def joinGame(request, room_name):
     })
 
 
+def selection(request, room_name):
+    return render(request, "frontend/selectionPage.html", {
+        "room_name": room_name
+    })
+
 def game(request, room_name):
     return render(request, "frontend/gamePage.html", {
         "room_name": room_name

@@ -6,7 +6,8 @@ module.exports = {
         "landingPageMain": "./landingPageSrc/index.js",
         "lobbyPageMain": "./lobbyPageSrc/index.js",
         "joinGamePage": "./joinGamePageSrc/index.js",
-        "gamePage": "./songSelectionPageSrc/index.js"
+        "selectionPage": "./songSelectionPageSrc/index.js",
+        "gamePage": "./gamePageSrc/index.js",
     },
     output: {
         path: path.resolve(__dirname, "./static/frontend"),
