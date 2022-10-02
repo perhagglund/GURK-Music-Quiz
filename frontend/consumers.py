@@ -3,20 +3,17 @@ from hashlib import new
 from itertools import chain, count
 import json
 import random
-from turtle import down, up
+from turtle import delay, down, up
 from channels.db import DatabaseSyncToAsync, database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 import frontend.models
 from frontend.models import Rooms, Users, Songs, Chat
-import youtube_dl
-import os
-import time
-import threading
+import frontend.tasks as tasks
 
 class lobbyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
+        self.room_group_name = 'lobby_%s' % self.room_name
         # Join room group
         self.nickname = ""
         self.leader = False
@@ -430,13 +427,13 @@ class lobbyConsumer(AsyncWebsocketConsumer):
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-# Game Client vvvvvvv
+# Selection Client vvvvvvv
 
 
-class gameConsumer(AsyncWebsocketConsumer):
+class selectionConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
+        self.room_group_name = 'selection_%s' % self.room_name
         # Join room group
         self.nickname = ""
         self.leader = False
@@ -553,13 +550,13 @@ class gameConsumer(AsyncWebsocketConsumer):
             if allMax and state == "songSelection" and allReady:
                 songList = await self.getSongs()
                 await self.downloadSongs(songList)
-                if state == "songSelection" and self.downloaded:
-                    await self.changeGameState("game")
-                    await self.channel_layer.group_send(
-                        self.room_group_name,
-                        {
-                            'type': 'startGameGroup',
-                        })
+                await self.changeGameState("loading")
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "setGameLoading"
+                    }
+                )
             elif not state == "songSelection":
                 await self.send(text_data=json.dumps({
                     "ContentType": "startGameDenied",
@@ -615,9 +612,13 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     # End of Receive message from WebSocket
     
-    async def downloadSongs(self, event): 
-        time.sleep(6)
-        self.downloaded = True
+    async def downloadSongs(self, songList): 
+        tasks.downloadSongs.delay(songList, self.room_group_name)
+        
+    async def setGameLoading(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "loadingGame"
+        }))
 
     async def loadingGameGroup(self, event):
         await self.send(text_data=json.dumps({
@@ -625,8 +626,14 @@ class gameConsumer(AsyncWebsocketConsumer):
         }))
 
     async def startGameGroup(self, event):
+        if self.leader:
+            for song in event["songList"]:
+                await self.applyRandomId(song)
+        print("setting users to Offline")
+        await self.allUsersOffline()
         await self.send(text_data=json.dumps({
             "ContentType": "startGameGroup",
+            "songList": event["songList"],
         }))
     
     async def updatePlayerStatus(self, event):
@@ -664,9 +671,22 @@ class gameConsumer(AsyncWebsocketConsumer):
             "userList": userList
         }))
 
+    async def downloadCompleted(self, event, type="downloadCompleted"):
+        await self.send(text_data=json.dumps({
+            "ContentType": "downloadCompleted",
+        }))
 
     # Database Functions Game Client
+    
+    @database_sync_to_async
+    def applyRandomId(self, songdata):
+        song = Songs.objects.get(room_id=self.room_name, song_id=songdata["song_id"])
+        print(song)
+        song.randomId = songdata["randomId"]
+        song.filelocation = songdata["filename"]
+        song.save()
         
+
     @database_sync_to_async
     def changeGameState(self, state):
         room = Rooms.objects.get(room_id=self.room_name)
@@ -715,7 +735,9 @@ class gameConsumer(AsyncWebsocketConsumer):
             title=data["song"]["title"],
             album=data["song"]["album"],
             duration=duration,
-            user=user)
+            user=user,
+            randomId="",
+            filelocation="")
         song.save()
         songsCount = Songs.objects.all().filter(user=user).count()
         user.chosenSongs = songsCount
@@ -751,4 +773,144 @@ class gameConsumer(AsyncWebsocketConsumer):
         room = Rooms.objects.get(room_id=self.room_name)
         user = Users.objects.get(room=room, uniqueID=self.id)
         user.ready = status
+        user.save()
+
+    @database_sync_to_async
+    def allUsersOffline(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        users = Users.objects.all().filter(room=room)
+        for user in users:
+            user.online = False
+            user.save()
+
+# Selection Client ^^^^^^
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# Game Client vvvvvvv
+
+
+class gameConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_group_name = 'game_%s' % self.room_name
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+        self.nickname = ""
+        self.leader = False
+        self.id = ""
+        self.downloaded = False
+        self.room = {
+            "state": "game",
+            "rounds": 0,
+            "currentRound": 0,
+            "reverse": False,
+            "speed": 0,
+        }
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+        self.text_data_json = json.loads(text_data)
+        contentType = self.text_data_json["ContentType"]
+        options = {
+            "checkID": self.checkID,
+            "joinRoom": self.joinRoom,
+        }
+        if contentType in options:
+            await options[contentType]()
+
+    # Receive message from room group
+
+    async def checkID(self):
+        IDCheck = await self.checkIfValidID()
+        if IDCheck["idExists"]:
+            playerinfo = IDCheck["playerInfo"][0]
+            print("playerinfo", playerinfo)
+            self.nickname = playerinfo["nickname"]
+            self.id = playerinfo["uniqueID"]
+            if playerinfo["leader"]:
+                self.leader = True
+            await self.updateOnline(True)
+            await self.send(text_data=json.dumps({
+                "ContentType": "Accepted",
+                "idExists": True,
+                "nickname": self.nickname,
+            }))
+        else:
+            await self.send(text_data=json.dumps({
+                "ContentType": "Denied"
+            }))
+
+    async def joinRoom(self):
+        room = await self.getRoomData()
+        roomUsers = await self.getUserData()
+        print(room)
+        print(roomUsers)
+        self.room = {
+            "state": "game",
+            "rounds": room["rounds"],
+            "currentRound": 0,
+            "reverse": room["reverse"],
+            "speed": float(room["speed"]),
+        }
+        await self.send(text_data=json.dumps({
+            "ContentType": "RoomData",
+            "roomReverse": room["reverse"],
+            "roomRounds": float(room["rounds"]),
+            "roomSpeed": float(room["speed"]),
+            "roomUsers": roomUsers,
+        }))
+    # End of receive
+
+
+
+    # Database Functions
+
+    @database_sync_to_async
+    def checkIfValidID(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        idExists = Users.objects.filter(room=room , uniqueID=self.text_data_json["id"]).exists()
+        playerInfo = Users.objects.filter(room=room, uniqueID=self.text_data_json["id"]).values()
+        return {
+            "idExists": idExists,
+            "playerInfo": list(playerInfo)
+        }
+
+    @database_sync_to_async
+    def updateOnline(self, status):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(nickname=self.nickname, room=room)
+        user.online = status
+        user.save()
+
+    @database_sync_to_async
+    def getRoomData(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        return room.__dict__
+
+    @database_sync_to_async
+    def getUserData(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = list(Users.objects.all().filter(room=room).values())
+        return user
+
+    @database_sync_to_async
+    def getSongList(self):
+        songs = Songs.objects.all().filter(room_id=self.room_name).values()
+        return list(songs)
+
+    @database_sync_to_async
+    def changeOnlineStatus(self, status):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(room=room, uniqueID=self.id)
+        user.online = status
         user.save()

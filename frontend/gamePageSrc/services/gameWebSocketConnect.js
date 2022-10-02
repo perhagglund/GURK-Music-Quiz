@@ -1,0 +1,1 @@
+export const gameclient = new WebSocket("ws://" + window.location.host + "/ws/game/" + roomName + "/")

@@ -5,6 +5,7 @@ import CookieBanner from "../joinGamePageSrc/charSelectComponents/CookieBanner";
 import Button from "../landingPageSrc/components/Button";
 
 const App = () => {
+    const roomName = window.location.pathname.split("/")[1]
     const [songs, setSong] = useState([])
     const session = sessionStorage.getItem("uniqueID")
     const [showCookieBanner, setShowCookieBanner] = useState('none')
@@ -15,6 +16,7 @@ const App = () => {
     const [ready, setReady] = useState(false)
     const [readyText, setReadyText] = useState("Not Ready")
     const [loadingPercent, setLoadingPercent] = useState(0)
+    const [downloadedSongs, setDownloadedSongs] = useState([])
     useEffect(() => {
         if(!localStorage.getItem("cookieAccepted")){
             setShowCookieBanner("")
@@ -81,6 +83,7 @@ const App = () => {
             } break
             case "startGameGroup": {
                 setGameState("In game")
+                window.location.pathname = roomName + "/game"
             } break
             case "startGameDenied": {
                 setErrorMsg("Could not start game: " + data.reason)
@@ -104,6 +107,9 @@ const App = () => {
             } break
             case "downloadFailed": {
                 setErrorMsg("Could not download songs: " + data.reason)
+            } break
+            case "downloadCompleted": {
+                setGameState("In game")
             } break
             default:
                 console.error("Unknown message type") 
@@ -135,6 +141,14 @@ const App = () => {
         gameclient.send(JSON.stringify({
             "ContentType": "changeReady"
         }))
+    }
+
+    const playAudio = (songList) => {
+        songList.forEach(song => {
+            console.log("Playing song: " + song.song_id)
+            const audio = new Audio(song.filename)
+            audio.play() 
+        });
     }
 
     return (
