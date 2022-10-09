@@ -163,6 +163,7 @@ const App = () => {
             {players.map(player => <div>id:{player.uniqueID} name:{player.nickname} online:{String(player.online)} chosenSongs: {player.chosenSongs} ready: {String(player.ready)}</div>)}
             <div>{gameState}</div> 
             <div>{errorMsg}</div>
+            <audio id="audio" src="/static/processedSongs/selection_6R5nVMa4_BE5GGyRR.mp3" controls></audio>
             <div className={"notcookie-container"} style={cookieBannerStyle}>
                 <CookieBanner onClick={changeVisibility} />
             </div>

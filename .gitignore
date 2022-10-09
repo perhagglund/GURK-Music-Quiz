@@ -133,4 +133,5 @@ frontend/node_modules
 frontend/songfiles/*
 node_modules/
 venv/
-frontend/static/frontend/*.js
+frontend/static/frontend/*
+*.DS_Store
