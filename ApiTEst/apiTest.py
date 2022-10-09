@@ -1,20 +1,31 @@
-import youtube_dl
-import threading
+# importing the module
+from pytube import YouTube
 
-songIds = ["YVkUvmDQ3HY", "_Yhyp-_hX2s", "7tBBw-8mM2o", "Xs1wozR8OmE", "GP0mB6btU3I"]
+# where to save
+SAVE_PATH = "../frontend/static/songs" #to_do
 
-def downloadSong(songId):
-    video_url = "https://www.youtube.com/watch?v="+ songId
-    video_info = youtube_dl.YoutubeDL().extract_info(
-        url = video_url,download=False
-    )
-    filename = "C:\\Users\\a3bei\\Desktop\\Projects\\GURK_Music_Quiz\\frontend\\testFiles\\" + songId + ".mp3"
-    options={
-        'format':'bestaudio/best',
-        'keepvideo':False,
-        'outtmpl':filename,
-    }
-    with youtube_dl.YoutubeDL(options) as ydl:
-        ydl.download([video_info['webpage_url']])
+# link of the video to be downloaded
+link="https://www.youtube.com/watch?v=xWOoBJUqlbI"
 
+try:
+	# object creation using YouTube
+	# which was imported in the beginning
+	yt = YouTube(link)
+except:
+	print("Connection Error") #to handle exception
 
+# filters out all the files with "mp4" extension
+mp4files = yt.streams.filter('mp4')
+
+#to set the name of the file
+yt.set_filename('GeeksforGeeks Video')
+
+# get the video with the extension and
+# resolution passed in the get() function
+d_video = yt.get(mp4files[-1].extension,mp4files[-1].resolution)
+try:
+	# downloading the video
+	d_video.download(SAVE_PATH)
+except:
+	print("Some Error!")
+print('Task Completed!')

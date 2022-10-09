@@ -1,20 +1,20 @@
+import time
 from celery import shared_task
-import os
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-import time
 import youtube_dl
-from frontend.models import Songs
 import random
 import string
+import frontend.processes as processes
+from sys import platform
 
-async def sendBackMessage(room_group_name, songList): 
+async def sendBackFinnishedSongs(room_group_name, song): 
     channel_layer = get_channel_layer()
     await channel_layer.group_send(
         room_group_name,
         {
-            'type': 'startGameGroup',
-            'songList': songList,
+            'type': 'finnishedSongGroup',
+            'song': song,
         })
 
 # define a new id to the downloaded songs in the database
@@ -26,7 +26,6 @@ def randomSongId(length):
     # get all ascii letters and digits
     lettersAndDigits = string.ascii_letters + string.digits
     result_str = ''.join(random.choice(lettersAndDigits) for i in range(length))
-    print("Random string of length", length, "is:", result_str)
     return result_str
 
 def downloadSong(songId):
@@ -48,14 +47,55 @@ def downloadSong(songId):
     return filename
 
 @shared_task
-def downloadSongs(songList, room_group_name):
-    finnishedSongs = []
-    for song in songList:
-        filename = downloadSong(song["song_id"])
-        randomId = defineSongId(room_group_name)
-        finnishedSongs.append({
-            "filename": filename,
-            "randomId": randomId,
-            "song_id": song["song_id"]
+def downloadSongs(song, room_group_name, songOptions, room_name):
+    randomId = defineSongId(room_group_name)
+    filename = downloadSong(song["song_id"])
+    outputFile = "processedSongs/" + randomId + ".mp3"
+    if platform == "Linux" or platform == "linux" or platform == "linux2" or platform == "darwin":
+        processes.process(filename, outputFile, songOptions, room_name)
+        filename = outputFile
+    elif platform == "win32" or platform == "win64" or platform == "cygwin" or platform == "msys":
+        processes.processWindows(filename, outputFile, room_name) 
+        filename = outputFile
+        print("You are on windows, cant process songs, hajoo mulli")
+    song["filename"] = filename
+    song["randomId"] = randomId
+    async_to_sync(sendBackFinnishedSongs)(room_group_name, song)
+    
+
+
+async def sendBackStartCount(room_group_name): 
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(
+        room_group_name,
+        {
+            'type': 'startCountDownGroup',
         })
-    async_to_sync(sendBackMessage)(room_group_name, finnishedSongs)
+
+async def sendBackCountDown(room_group_name, count): 
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(
+        room_group_name,
+        {
+            'type': 'countDownGroup',
+            'count': count,
+        })
+
+async def sendBackStartGame(room_group_name): 
+    channel_layer = get_channel_layer()
+    print("sending start game")
+    await channel_layer.group_send(
+        room_group_name,
+        {
+            'type': 'gameStart',
+        })
+
+@shared_task
+def startCountDown(room_group_name):
+    async_to_sync(sendBackStartCount)(room_group_name)
+    for i in range(4, -1, -1):
+        async_to_sync(sendBackCountDown)(room_group_name, i)
+        time.sleep(1)
+        print(i)
+        if i == 0:
+            async_to_sync(sendBackStartGame)(room_group_name)
