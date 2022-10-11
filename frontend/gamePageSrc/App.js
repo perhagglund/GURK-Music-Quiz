@@ -18,6 +18,8 @@ const App = () => {
     const [guess, setGuess] = useState("")
     const [guesses, setGuesses] = useState([])
     const [correctGuess, setCorrectGuess] = useState("")
+    const [ currentLeader, setCurrentLeader ] = useState("")
+    const [ winner, setWinner ] = useState("")
 
     useEffect(() => {
         if(session){
@@ -34,6 +36,7 @@ const App = () => {
 
     gameclient.onmessage = (e) => {
         const data = JSON.parse(e.data)
+        console.log(data)
         switch(data.ContentType){
             case "Accepted": {
                 gameclient.send(JSON.stringify({
@@ -79,23 +82,27 @@ const App = () => {
                 setYouGuessed(true)
             } break
             case "songData": {
+                setGuesses([])
+                setCurrentLeader(false)
                 setCurrentSong(data.song)
                 document.getElementById("audio").play()
             } break
             case "guessSubmitCorrectSongName": {
                 document.getElementById("audio").pause()
-                setGuesses(guesses => [...guesses, {"guess": currentSong, "nickname": data.nickname, "correct": true}])
+                setGuesses(guesses => [...guesses, {"guess": currentSong.title, "nickname": data.nickname, "correct": true}])
                 setYouGuessed(false)
                 setGuessing(false)
                 setWhosGuessing("")
             } break
             case "youGuessedCorrectSongName": {
+                console.log("youGuessedCorrectSongName")
                 document.getElementById("audio").pause()
-                setGuesses(guesses => [...guesses, {"guess": "guessed: "+currentSong, "nickname": "You", "correct": true}])
+                setGuesses(guesses => [...guesses, {"guess": "guessed: "+currentSong.title, "nickname": "You", "correct": true}])
                 setYouGuessed(false)
                 setGuessing(false)
                 setWhosGuessing("")
                 setCorrectGuess("correct")
+                handleNextSong()
             } break
             case "guessSubmitIncorrectSongName": {
                 document.getElementById("audio").play()
@@ -111,6 +118,22 @@ const App = () => {
                 setGuessing(false)
                 setWhosGuessing("")
                 setCorrectGuess("incorrect")
+            } break
+            case "yourSong": {
+                setGuesses([])
+                console.log("yourSong", data)
+                setCurrentLeader(true)
+                setGuessing(false)
+                setWhosGuessing("")
+                setCurrentSong(data.song)
+                setCurrentSong(data.song)
+                console.log("yourSong", data.song)
+                document.getElementById("audio").play()
+                setCorrectGuess("Youre the leader")
+            } break
+            case "gameEnd": {
+                setGameState("end")
+                setWinner(data.winner)
             } break
             default: {
                 console.log("Unknown message type")
@@ -137,6 +160,14 @@ const App = () => {
             }))
         }
         setGuess("")
+    }
+
+    const handleNextSong = () => {
+        console.log("handleNextSong")
+        gameclient.send(JSON.stringify({
+            "ContentType": "nextSong",
+        }))
+        setCorrectGuess("")
     }
       
     if(gameState === "waiting"){
@@ -176,23 +207,42 @@ const App = () => {
                 <h1>{whosGuessing} is guessing</h1>
             </div>
             }
-            {youGuessed &&
+            {youGuessed && !currentLeader ?
+
             <div className="guessing">
                 <input type="text" placeholder="Guess the song" onChange={handleGuess} value={guess}/>
                 <Button name={"Guess"} onClick={handleGuessSubmit} disabled={false} className={"submitButton"}/>
-            </div>}
-            
+            </div> 
+
+            :
+
+            <div className="guessing">
+                <div>It is your song</div>
+            </div>
+            }
                 Hello Worlds!
                 <div className="userList">{users.map(user => <div className={user.id}>id: {user.uniqueID} nickname: {user.nickname}</div>)}</div>
                 <div className="gameState">{gameState}</div>
                 {gameStarted && <div className="currentSong"> Playing: {currentSong.title}</div>}
                 {gameStarted && <div className="currentSong">Artist: {currentSong.artist}</div>}
                 {gameStarted && <audio controls id="audio" src={currentSong.filelocation}></audio>}
-                <Button onClick={() => handleGuessClick()} name={"Guess"} classname={"guessButton"} disabled={false}/>
+                {!currentLeader &&
+                <Button onClick={handleGuessClick} name={"Guess"} classname={"guessButton"} disabled={false}/>
+                }
                 Guesses:
-                <div className="guesses">{guesses.map(guess => <div className="guess">{guess.nickname}: {guess.guess}</div>)}</div>
+                <div className="guesses">{guesses.map(guess => <div className="guess">{guess.nickname}: {guess.guess} correct {String(guess.correct)}</div>)}</div>
             </div>
-    )
+        )
+    } else if(gameState === "end"){
+        return (
+            <div className={"body"}>
+                <div className="endGame">
+                    <h1>Game Over</h1>
+                    <h1>Thanks for playing</h1>
+                    <h1>{winner.map(win => win.name)} won</h1>
+                </div>
+            </div>
+        )
     }}
 
 

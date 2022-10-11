@@ -26,6 +26,7 @@ class Users(models.Model):
     online = models.BooleanField()
     chosenSongs = models.IntegerField()
     ready = models.BooleanField()
+    points = models.IntegerField()
 
 class Songs(models.Model):
     room_id = models.CharField(max_length=16)
