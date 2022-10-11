@@ -223,8 +223,6 @@ const App = () => {
                 Hello Worlds!
                 <div className="userList">{users.map(user => <div className={user.id}>id: {user.uniqueID} nickname: {user.nickname}</div>)}</div>
                 <div className="gameState">{gameState}</div>
-                {gameStarted && <div className="currentSong"> Playing: {currentSong.title}</div>}
-                {gameStarted && <div className="currentSong">Artist: {currentSong.artist}</div>}
                 {gameStarted && <audio controls id="audio" src={currentSong.filelocation}></audio>}
                 {!currentLeader &&
                 <Button onClick={handleGuessClick} name={"Guess"} classname={"guessButton"} disabled={false}/>
