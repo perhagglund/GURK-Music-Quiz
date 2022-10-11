@@ -12,13 +12,13 @@ inputFile="$inputFile.mp3"
 reverseFile=""
 speedFile=""
 
-if $reverse; then
+if [ "$reverse" = "True" ]; then
     ffmpeg -i $inputFile -vf reverse -af areverse "$tempOutFile-reverse.mp3"
     reverseFile="$tempOutFile-reverse.mp3"
     inputFile="$tempOutFile-reverse.mp3"
 fi
 
-if ! [ "$speed" -eq "1.00" ]; then
+if ! [ "$speed" = "1.00" ]; then
     ffmpeg -i $inputFile -filter:a "atempo=$speed" "$tempOutFile-speed.mp3"
     speedFile="$tempOutFile-speed.mp3"
     inputFile="$tempOutFile-speed.mp3"
