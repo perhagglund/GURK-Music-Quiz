@@ -53,6 +53,8 @@ class lobbyConsumer(AsyncWebsocketConsumer):
         }
         if contentType in options:
             await options[contentType]()
+        else:
+            print("ContentType not found lobbyConsumer")
 
     async def leaderJoined(self):
         if not await self.roomAlreadyExists():
@@ -106,9 +108,7 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                 "type": "chatMessageGroup",
                 "chat": chat
             }
-        )
-
-        
+        )        
 
     async def checkboxChange(self):
         if self.leader:
@@ -291,7 +291,8 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                      uniqueID="",
                      online=False,
                      chosenSongs = 0,
-                     ready = False)
+                     ready = False,
+                     points = 0)
 
 #   Database functions lobby client
 
@@ -342,7 +343,8 @@ class lobbyConsumer(AsyncWebsocketConsumer):
                              uniqueID="",
                              online=False,
                              chosenSongs= 0,
-                             ready=False)
+                             ready=False,
+                             points=0)
             else:
                 room = Rooms.objects.get(room_id=self.room_name)
                 userList = list(Users.objects.all().filter(room=room).values("nickname"))
@@ -475,6 +477,8 @@ class selectionConsumer(AsyncWebsocketConsumer):
         }
         if contentType in options:
             await options[contentType]()
+        else:
+            print("ContentType not found in selectionConsumer")
 
     async def checkID(self):
         IDCheck = await self.checkIfValidID()
@@ -532,7 +536,6 @@ class selectionConsumer(AsyncWebsocketConsumer):
                 "ContentType": "changeReady",
                 "ready": False,
             }))
-            print("sending song status")
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -623,7 +626,6 @@ class selectionConsumer(AsyncWebsocketConsumer):
         for song in songList:
             finnishedSong = tasks.downloadSongs.delay(song, self.room_group_name, songOptions, self.room_name)
             self.numberOfSongs = len(songList)
-            print("F", finnishedSong)
         
     async def setGameLoading(self, event):
         await self.send(text_data=json.dumps({
@@ -662,7 +664,6 @@ class selectionConsumer(AsyncWebsocketConsumer):
         userData = await self.getUserData()
         if userData["leader"]:
             self.leader = True
-            print("leader", self.nickname)
             await self.send(text_data=json.dumps({
                 "ContentType": "setLeader",
                 "leader": True,
@@ -703,10 +704,8 @@ class selectionConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def applyRandomId(self, songdata):
         song = Songs.objects.get(room_id=self.room_name, song_id=songdata["song_id"])
-        print(songdata)
         filename = "/static/processedSongs/" + songdata["randomId"] + ".mp3"
         song.filelocation = filename
-        print("saving song", songdata["filename"])
         song.save()
 
     @database_sync_to_async
@@ -808,9 +807,7 @@ class selectionConsumer(AsyncWebsocketConsumer):
     def getSongOptions(self):
         room = Rooms.objects.get(room_id=self.room_name).__dict__
         roomSpeed = str(room["speed"])
-        print("speed", roomSpeed)
         roomReversed = str(room["reverse"])
-        print("reversed", roomReversed)
         return {
             "speed": str(roomSpeed),
             "reverse": str(roomReversed)
@@ -844,6 +841,7 @@ class gameConsumer(AsyncWebsocketConsumer):
         }
         self.songList = []
         self.currentSong = 0
+        self.roundDone = False
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -862,11 +860,13 @@ class gameConsumer(AsyncWebsocketConsumer):
             "gameStart": self.gameStart,
             "guessClick": self.guessClick,
             "guessSubmit": self.guessSubmit,
-            "getSong": self.getSong
+            "getSong": self.getSong,
+            "nextSong": self.nextSong,
         }
         if contentType in options:
             await options[contentType]()
-
+        else:
+            print("unknown contentType in gameConsumer")
     # Receive message from room group
 
     async def checkID(self):
@@ -919,7 +919,6 @@ class gameConsumer(AsyncWebsocketConsumer):
         }))
 
     async def guessClick(self):
-        print("guessClick")
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -931,6 +930,7 @@ class gameConsumer(AsyncWebsocketConsumer):
     async def guessSubmit(self):
         song = await self.cleanUpSongName()
         if await self.mostOfStringCorrect(song, self.text_data_json["guess"]):
+            await self.addAPoint()
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -951,16 +951,67 @@ class gameConsumer(AsyncWebsocketConsumer):
     async def getSong(self):
         if self.leader:
             song = await self.getSongData()
+            songLeader = await self.getSongLeader(song["user_id"])
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     "type": "getSongGroup",
                     "song": song,
+                    "songLeader": songLeader,
                 }
             )
-        
+    async def nextSong(self):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "updateCurrentRound",
+                "currentRound": self.currentSong + 1,
+            }
+        )
 
     # End of receive
+    async def nextSongStartGroup(self, event):
+        if self.currentSong == len(self.songList):
+            highestScore = await self.getHighestScore()
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "gameEndGroup",
+                    "highestScore": highestScore,
+                }
+            )
+        else:
+            song = await self.getNextSong()
+            songLeader = await self.getSongLeader(song["user_id"])
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "getSongGroup",
+                    "song": song,
+                    "songLeader": songLeader,
+                }
+            )
+
+    async def gameEndGroup(self, event):
+        await self.send(text_data=json.dumps({
+            "ContentType": "gameEnd",
+            "winner": event["highestScore"]
+        }))
+
+    async def nextSongGroup(self, event):
+        song = event["song"]
+        songLeader = event["songLeader"]
+        await self.send(text_data=json.dumps({
+            "ContentType": "songData",
+            "song": song,
+            "songLeader": songLeader,
+        }))
+
+    async def updateCurrentRound(self, event):
+        self.currentSong = event["currentRound"]
+        if self.leader:
+            await self.nextSongStartGroup(event)
+
     async def guessClickGroup(self, event):
         if not event["nickname"] == self.nickname:
             await self.send(text_data=json.dumps({
@@ -997,15 +1048,23 @@ class gameConsumer(AsyncWebsocketConsumer):
             }))
 
     async def gameStart(self, event):
-        print("gameStart")
         await self.updateRoomState("game")
         self.songList = await self.getSongList()
-        print("Before shuffle", self.songList)
-        await self.shuffleSongList()
-        print("After shuffle", self.songList)
+        if self.leader:
+            await self.shuffleSongList()
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "sendSongListGroup",
+                    "songList": self.songList,
+                }
+            )
         await self.send(text_data=json.dumps({
             "ContentType": "gameStart",
         }))
+
+    async def sendSongListGroup(self, event):
+        self.songList = event["songList"]
 
     async def startCountDownGroup(self, event):
         await self.send(text_data=json.dumps({
@@ -1046,13 +1105,16 @@ class gameConsumer(AsyncWebsocketConsumer):
         random.shuffle(self.songList)
     
     async def getSongData(self):
+        self.roundDone = False
         song = self.songList[self.currentSong]
-        print("getSongData", song)
-        self.currentSong += 1
+        return song
+
+    async def getNextSong(self):
+        song = self.songList[self.currentSong]
         return song
 
     async def getCurrentSong(self):
-        return self.songList[self.currentSong-1]
+        return self.songList[self.currentSong]
 
     async def cleanUpSongName(self):
         song = await self.getCurrentSong()
@@ -1079,12 +1141,38 @@ class gameConsumer(AsyncWebsocketConsumer):
             return False
 
     async def getSongGroup(self, event):
-        await self.send(text_data=json.dumps({
-            "ContentType": "songData",
-            "song": event["song"],
-        }))
+        if self.id == event["songLeader"]:
+            await self.send(text_data=json.dumps({
+                "ContentType": "yourSong",
+                "song": event["song"],
+                "songLeader": True,
+            }))
+        else:
+            await self.send(text_data=json.dumps({
+                "ContentType": "songData",
+                "song": event["song"],
+                "songLeader": False
+            }))
 
     # Database Functions
+
+    @database_sync_to_async
+    def addAPoint(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        user = Users.objects.get(room=room, nickname=self.nickname)
+        user.points += 1
+        user.save()
+
+    @database_sync_to_async
+    def getHighestScore(self):
+        room = Rooms.objects.get(room_id=self.room_name)
+        users = list(Users.objects.filter(room=room))
+        highestScore = 0
+        for user in users:
+            if user.points > highestScore:
+                highestScore = user.points
+        user = list(Users.objects.filter(room=room, points=highestScore))
+        return user
 
     @database_sync_to_async
     def checkIfValidID(self):
@@ -1131,3 +1219,8 @@ class gameConsumer(AsyncWebsocketConsumer):
         room.state = state
         room.save()
 
+    @database_sync_to_async
+    def getSongLeader(self, songUser):
+        room = Rooms.objects.get(room_id=self.room_name)
+        songLeader = str(Users.objects.get(room=room, id=songUser).uniqueID)
+        return songLeader
