@@ -7,6 +7,7 @@ import random
 import string
 import frontend.processes as processes
 from sys import platform
+from yt_dlp import YoutubeDL
 
 async def sendBackFinnishedSongs(room_group_name, song): 
     channel_layer = get_channel_layer()
@@ -29,22 +30,39 @@ def randomSongId(length):
     return result_str
 
 def downloadSong(songId):
-    try:
-        video_url = "https://www.youtube.com/watch?v="+ songId
-        video_info = youtube_dl.YoutubeDL().extract_info(
-            url = video_url,download=False
-        )
-        filename = "songs/" + songId + ".mp3"
-        options={
-            'format':'bestaudio/best',
-            'keepvideo':False,
-            'outtmpl':"./frontend/static/"+filename,
-        }
-        with youtube_dl.YoutubeDL(options) as ydl:
-            ydl.download([video_info['webpage_url']])
-    except:
-        filename = downloadSong(songId)
+    # define the song path
+    filename = "songs/" + songId + ".mp3"
+    # define the song url
+    songUrl = "https://www.youtube.com/watch?v=" + songId
+    # define the song options
+    songOptions = {
+        'format': 'bestaudio/best',
+        'outtmpl': "./frontend/static/"+filename,
+        'default_search': 'auto',
+        "keepvideo": False,
+    }
+    # download the song
+    with YoutubeDL(songOptions) as ydl:
+        ydl.download([songUrl])
+    # return the song id
     return filename
+#def downloadSong(songId):
+#    try:
+#        video_url = "https://www.youtube.com/watch?v="+ songId
+#        video_info = youtube_dl.YoutubeDL().extract_info(
+#            url = video_url,download=False
+#        )
+#        filename = "songs/" + songId + ".mp3"
+#        options={
+#            'format':'bestaudio/best',
+#            'keepvideo':False,
+#            'outtmpl':"./frontend/static/"+filename,
+#        }
+#        with youtube_dl.YoutubeDL(options) as ydl:
+#            ydl.download([video_info['webpage_url']])
+#    except:
+#        filename = downloadSong(songId)
+#    return filename
 
 @shared_task
 def downloadSongs(song, room_group_name, songOptions, room_name):
