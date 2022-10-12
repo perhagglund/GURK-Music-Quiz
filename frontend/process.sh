@@ -11,7 +11,8 @@ tempOutFile="$inputFile-$roomName-temp"
 inputFile="$inputFile.mp3"
 reverseFile=""
 speedFile=""
-
+echo "Input file: $inputFile, exists $( [ -f "$inputFile" ] && echo "yes" || echo "no" )"
+echo "Output file: $outputFile"
 if [ "$reverse" = "True" ]; then
     ffmpeg -i $inputFile -vf reverse -af areverse "$tempOutFile-reverse.mp3"
     reverseFile="$tempOutFile-reverse.mp3"

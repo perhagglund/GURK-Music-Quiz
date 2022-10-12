@@ -20,6 +20,7 @@ const App = () => {
     const [correctGuess, setCorrectGuess] = useState("")
     const [ currentLeader, setCurrentLeader ] = useState("")
     const [ winner, setWinner ] = useState("")
+    const [ yourSongName, setYourSongName ] = useState("")
 
     useEffect(() => {
         if(session){
@@ -86,6 +87,7 @@ const App = () => {
                 setCurrentLeader(false)
                 setCurrentSong(data.song)
                 document.getElementById("audio").play()
+                setYourSongName("")
             } break
             case "guessSubmitCorrectSongName": {
                 document.getElementById("audio").pause()
@@ -130,6 +132,7 @@ const App = () => {
                 console.log("yourSong", data.song)
                 document.getElementById("audio").play()
                 setCorrectGuess("Youre the leader")
+                setYourSongName(data.song.title)
             } break
             case "gameEnd": {
                 setGameState("end")
@@ -207,6 +210,7 @@ const App = () => {
                 <h1>{whosGuessing} is guessing</h1>
             </div>
             }
+                {yourSongName.length > 0 && <h1>{yourSongName}</h1>}
             {youGuessed && !currentLeader ?
 
             <div className="guessing">
